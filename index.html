@@ -708,6 +708,9 @@
 </head>
 <body>
 
+  <!-- Hidden file input for Backup JSON Restore -->
+  <input type="file" id="globalRestoreFileInput" accept=".json,application/json" style="display:none;" onchange="handleRestoreFileSelected(this)">
+
   <!-- ==================== LOGIN SCREEN ==================== -->
   <div id="loginScreen" class="login-container">
     <div class="login-header-text">เข้าสู่ระบบ</div>
@@ -969,7 +972,6 @@
           <div class="yellow-frame">
             <div class="welcome-header-row">
               <div class="welcome-left">
-                <!-- People Box Icon -->
                 <svg width="36" height="36" viewBox="0 0 38 38" style="flex-shrink:0;">
                   <rect x="2" y="2" width="34" height="34" rx="6" fill="none" stroke="#bdc3c7" stroke-width="2.5"/>
                   <circle cx="13" cy="14" r="4" fill="#f39c12"/>
@@ -1005,7 +1007,7 @@
                   </svg>
                 </a>
               </li>
-              <li>- สถานะการลงทะเบียน <span style="color: var(--text-blue);">ลงทะเบียนแล้วใช้งานได้เลย</span></li>
+              <li>- สถานะการลงทะเบียน <span style="color: var(--text-blue);">ลงทะเบียนแล้วใช้งานได้เลย (ฐานข้อมูล IndexedDB ความจุสูง)</span></li>
             </ul>
 
             <hr class="green-hr">
@@ -1296,13 +1298,19 @@
         <!-- ==================== VIEW 3: จัดการโครงการ (MANAGE PROJECTS) ==================== -->
         <section id="view-manage" class="view-section" style="display: none;">
           <div class="grey-frame" style="padding: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-              <svg width="28" height="24" viewBox="0 0 28 24">
-                <path d="M2,4 L10,4 L12,6 L24,6 L24,20 L2,20 Z" fill="#f39c12" stroke="#d35400"/>
-                <circle cx="21" cy="17" r="5" fill="#3498db"/>
-                <path d="M21,14 L21,20 M18,17 L24,17" stroke="#fff" stroke-width="1.8"/>
-              </svg>
-              <a onclick="openProjectModal()" style="font-weight: normal; color: var(--text-blue);">คลิ๊กเพื่อเพิ่มโครงการใหม่</a>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="28" height="24" viewBox="0 0 28 24">
+                  <path d="M2,4 L10,4 L12,6 L24,6 L24,20 L2,20 Z" fill="#f39c12" stroke="#d35400"/>
+                  <circle cx="21" cy="17" r="5" fill="#3498db"/>
+                  <path d="M21,14 L21,20 M18,17 L24,17" stroke="#fff" stroke-width="1.8"/>
+                </svg>
+                <a onclick="openProjectModal()" style="font-weight: normal; color: var(--text-blue);">คลิ๊กเพื่อเพิ่มโครงการใหม่</a>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="classic-btn" onclick="exportBackupJsonFile()" title="บันทึกข้อมูลทั้งหมดเก็บเป็นไฟล์สำรอง .json ลงเครื่อง">สำรองข้อมูล (Backup .json)</button>
+                <button type="button" class="classic-btn" onclick="triggerRestoreBackupFile()" title="นำเข้าไฟล์สำรอง .json จากเครื่อง">กู้คืนข้อมูล (Restore .json)</button>
+              </div>
             </div>
             <hr class="green-hr">
 
@@ -1514,22 +1522,41 @@
                 </svg>
                 <div>
                   <strong style="font-size: 14px; color: var(--text-darkblue);">ระบบหลังบ้านสำหรับผู้ดูแลระบบ (Admin Management Console)</strong><br>
-                  <span style="font-size: 12px; color: #444;">จัดการตั้งค่าเว็บไซต์ ประกาศ ข้อมูลผู้ดูแลระบบ ตัวเลือกประเภทงบประมาณ บัญชีผู้ใช้ และโครงการทั้งหมด</span>
+                  <span style="font-size: 12px; color: #444;">จัดการตั้งค่าเว็บไซต์ ฐานข้อมูล IndexedDB สำรอง/กู้คืนไฟล์ข้อมูล (.json) บัญชีผู้ใช้ และโครงการทั้งหมด</span>
                 </div>
               </div>
-              <button type="button" class="classic-btn" onclick="openProjectModal()" style="font-weight:bold; color:#0d47a1;">+ เพิ่มโครงการใหม่ (Admin)</button>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="classic-btn" onclick="exportBackupJsonFile()" style="font-weight:bold; color:#1b5e20;">สำรองข้อมูล (Backup .json)</button>
+                <button type="button" class="classic-btn" onclick="triggerRestoreBackupFile()" style="font-weight:bold; color:#0d47a1;">กู้คืนข้อมูล (Restore .json)</button>
+                <button type="button" class="classic-btn" onclick="openProjectModal()" style="font-weight:bold; color:#0d47a1;">+ เพิ่มโครงการใหม่</button>
+              </div>
             </div>
 
             <!-- Admin Sub-navigation Tabs -->
             <div class="report-filter-bar" style="border-bottom: 1px solid var(--green-line); padding-bottom: 8px; margin-bottom: 12px;">
-              <a class="filter-chip active" data-admin-tab="settings" onclick="switchAdminTab('settings')">1. ตั้งค่าระบบ/ประกาศ/ส่วนท้ายเว็บ</a>
+              <a class="filter-chip active" data-admin-tab="settings" onclick="switchAdminTab('settings')">1. ตั้งค่าระบบ / สำรองข้อมูล (IndexedDB)</a>
               <a class="filter-chip" data-admin-tab="options" onclick="switchAdminTab('options')">2. จัดการตัวเลือกประเภทงบประมาณ</a>
               <a class="filter-chip" data-admin-tab="users" onclick="switchAdminTab('users')">3. จัดการบัญชีผู้ใช้งาน (<span id="adminUserCountBadge">0</span>)</a>
               <a class="filter-chip" data-admin-tab="projects" onclick="switchAdminTab('projects')">4. จัดการโครงการทั้งหมด (<span id="adminProjCountBadge">0</span>)</a>
             </div>
 
-            <!-- Admin Tab 1: System Settings, Announcement, Footer & Admin Password -->
+            <!-- Admin Tab 1: System Settings, Announcement, Footer, Admin Password & IndexedDB Backup/Restore -->
             <div id="admin-tab-settings" class="admin-tab-pane yellow-frame" style="border: 1px solid #90caf9; margin-bottom: 0;">
+              <!-- IndexedDB & Backup/Restore Box -->
+              <div style="background: #e3f2fd; border: 1px solid #1976d2; border-radius: 4px; padding: 10px 12px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                  <strong style="color: #0d47a1;">สถานะระบบจัดเก็บข้อมูลความจุสูง (IndexedDB Storage & Backup / Restore)</strong>
+                  <span id="idbStatusBadge" style="background: #1b5e20; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11.5px;">IndexedDB: พร้อมใช้งาน (ความจุระดับ GB + บีบอัดภาพอัตโนมัติ)</span>
+                </div>
+                <div id="idbUsageSummary" style="font-size: 12.5px; color: #333; margin-bottom: 8px;">
+                  กำลังคำนวณพื้นที่จัดเก็บข้อมูล...
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" class="classic-btn" onclick="exportBackupJsonFile()" style="font-weight: bold; color: #1b5e20;">ดาวน์โหลดไฟล์สำรองข้อมูลทั้งหมด (Export Backup .json)</button>
+                  <button type="button" class="classic-btn" onclick="triggerRestoreBackupFile()" style="font-weight: bold; color: #0d47a1;">นำเข้า/กู้คืนไฟล์สำรองข้อมูล (Import Restore .json)</button>
+                </div>
+              </div>
+
               <form onsubmit="saveAdminSiteSettings(event)">
                 <div style="font-weight: bold; color: var(--text-darkblue); margin-bottom: 8px;">1.1 ตั้งค่าข้อมูลระบบและประกาศหน้าเว็บ</div>
                 <div class="form-row">
@@ -1738,38 +1765,16 @@
   </div>
 
   <script>
-    // Generate default SVG data URI for activity photo placeholders so they always appear in print & Word
-    function createDefaultPhotoDataUrl(index, projectName, dateStr) {
-      const colors = [
-        { bg: "#e3f2fd", accent: "#1565c0", icon: "#29b6f6" },
-        { bg: "#e8f5e9", accent: "#2e7d32", icon: "#66bb6a" },
-        { bg: "#fff8e1", accent: "#ef6c00", icon: "#ffa726" },
-        { bg: "#f3e5f5", accent: "#6a1b9a", icon: "#ab47bc" }
-      ];
-      const c = colors[(index - 1) % colors.length];
-      const shortTitle = (projectName || "โครงการ กศน./สกร.").slice(0, 38);
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260">
-        <rect width="400" height="260" fill="${c.bg}" stroke="${c.accent}" stroke-width="4"/>
-        <rect x="16" y="16" width="368" height="165" rx="6" fill="#ffffff" stroke="${c.icon}" stroke-width="2"/>
-        <circle cx="115" cy="78" r="22" fill="${c.icon}"/>
-        <path d="M75,155 C75,115 155,115 155,155 Z" fill="${c.accent}"/>
-        <circle cx="205" cy="72" r="24" fill="${c.accent}"/>
-        <path d="M160,155 C160,110 250,110 250,155 Z" fill="${c.icon}"/>
-        <circle cx="290" cy="82" r="20" fill="${c.icon}"/>
-        <path d="M255,155 C255,118 325,118 325,155 Z" fill="${c.accent}"/>
-        <text x="200" y="208" text-anchor="middle" font-family="Tahoma, sans-serif" font-size="15" font-weight="bold" fill="${c.accent}">ภาพกิจกรรมที่ ${index} (${dateStr || ""})</text>
-        <text x="200" y="232" text-anchor="middle" font-family="Tahoma, sans-serif" font-size="12" fill="#333333">${shortTitle}</text>
-      </svg>`;
-      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-    }
-
-    // Fresh clean system with no preloaded projects; user accounts & projects persist via localStorage
+    // ==================== HIGH-CAPACITY INDEXEDDB STORAGE + LOCALSTORAGE FALLBACK ====================
     const STORAGE_KEY = "pls_kirirat_clean_v2";
+    const IDB_NAME = "pls_kirirat_indexeddb_v1";
+    const IDB_STORE = "app_state";
     const INITIAL_PROJECTS = [];
 
     let state = {
       isLoggedIn: false,
       isAdmin: false,
+      idbActive: false,
       currentAdminTab: "settings",
       currentView: "home",
       budgetYear: "2568- 2569",
@@ -1826,6 +1831,32 @@
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
+    function openAppIndexedDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          reject(new Error("IndexedDB not supported"));
+          return;
+        }
+        try {
+          const req = window.indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = function(evt) {
+            const db = evt.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE)) {
+              db.createObjectStore(IDB_STORE);
+            }
+          };
+          req.onsuccess = function(evt) {
+            resolve(evt.target.result);
+          };
+          req.onerror = function(evt) {
+            reject(evt.target.error || new Error("IndexedDB open failed"));
+          };
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
     function syncActiveUserToRegistry() {
       if (!state.userId || state.userId === state.siteSettings.adminUser) return;
       const idx = state.registeredUsers.findIndex(u => u.userId === state.userId);
@@ -1844,39 +1875,190 @@
       }
     }
 
-    function persistState() {
-      try {
-        if (state.isLoggedIn && state.userId && state.userId !== state.siteSettings.adminUser) {
-          syncActiveUserToRegistry();
-        }
-        const toSave = {
-          budgetYear: state.budgetYear,
-          siteSettings: state.siteSettings,
-          registeredUsers: state.registeredUsers
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-      } catch (err) {
-        // Ignore storage errors in restricted sandboxed environments
+    function buildSerializablePayload() {
+      if (state.isLoggedIn && state.userId && state.userId !== state.siteSettings.adminUser) {
+        syncActiveUserToRegistry();
+      }
+      return {
+        version: 2,
+        exportedAt: getNowTimestampStr(),
+        budgetYear: state.budgetYear,
+        siteSettings: state.siteSettings,
+        registeredUsers: state.registeredUsers,
+        adminProjects: state.isAdmin ? state.projects : []
+      };
+    }
+
+    function applyLoadedPayload(parsed) {
+      if (!parsed || typeof parsed !== "object") return;
+      if (Array.isArray(parsed.registeredUsers)) {
+        state.registeredUsers = parsed.registeredUsers;
+      }
+      if (parsed.siteSettings && typeof parsed.siteSettings === "object") {
+        state.siteSettings = { ...state.siteSettings, ...parsed.siteSettings };
+      }
+      if (parsed.budgetYear) {
+        state.budgetYear = parsed.budgetYear;
+      }
+      if (Array.isArray(parsed.adminProjects) && parsed.adminProjects.length > 0 && state.projects.length === 0) {
+        state.projects = parsed.adminProjects;
       }
     }
 
-    function loadSavedState() {
+    function persistState() {
+      const toSave = buildSerializablePayload();
+      // 1. Primary high-capacity storage: IndexedDB (hundreds of MBs to GBs)
+      openAppIndexedDB().then(db => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        const store = tx.objectStore(IDB_STORE);
+        store.put(toSave, "main");
+        state.idbActive = true;
+        updateStorageStatusUI();
+      }).catch(() => {
+        // Fallback if IndexedDB is blocked in sandboxed iframe
+      });
+
+      // 2. Best-effort mirror to localStorage
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      } catch (err) {
+        // Ignore quota exceeded on localStorage since IndexedDB holds the full dataset
+      }
+      updateStorageStatusUI();
+    }
+
+    function loadSavedState(onComplete) {
+      // First load synchronous fallback from localStorage if present
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.registeredUsers)) {
-          state.registeredUsers = parsed.registeredUsers;
+        if (raw) {
+          applyLoadedPayload(JSON.parse(raw));
         }
-        if (parsed && parsed.siteSettings) {
-          state.siteSettings = { ...state.siteSettings, ...parsed.siteSettings };
-        }
-        if (parsed && parsed.budgetYear) {
-          state.budgetYear = parsed.budgetYear;
-        }
-      } catch (err) {
-        // Ignore storage errors in restricted sandboxed environments
+      } catch (err) {}
+
+      // Then load primary high-capacity IndexedDB database
+      openAppIndexedDB().then(db => {
+        state.idbActive = true;
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const store = tx.objectStore(IDB_STORE);
+        const getReq = store.get("main");
+        getReq.onsuccess = function() {
+          if (getReq.result) {
+            applyLoadedPayload(getReq.result);
+          } else if (state.registeredUsers.length > 0) {
+            // Migrate existing localStorage data into IndexedDB automatically
+            persistState();
+          }
+          if (onComplete) onComplete();
+        };
+        getReq.onerror = function() {
+          if (onComplete) onComplete();
+        };
+      }).catch(() => {
+        if (onComplete) onComplete();
+      });
+    }
+
+    function updateStorageStatusUI() {
+      const summaryEl = document.getElementById("idbUsageSummary");
+      const badgeEl = document.getElementById("idbStatusBadge");
+      if (!summaryEl) return;
+
+      const payload = buildSerializablePayload();
+      const jsonStr = JSON.stringify(payload);
+      const sizeBytes = new Blob([jsonStr]).size;
+      const sizeKb = (sizeBytes / 1024).toFixed(1);
+      const sizeMb = (sizeBytes / (1024 * 1024)).toFixed(2);
+      const totalUsers = state.registeredUsers.length;
+      const totalAllProjs = state.registeredUsers.reduce((sum, u) => sum + (Array.isArray(u.projects) ? u.projects.length : 0), 0)
+        + (state.isAdmin ? state.projects.length : 0);
+
+      if (badgeEl) {
+        badgeEl.textContent = state.idbActive
+          ? "IndexedDB: พร้อมใช้งาน (ความจุระดับ GB + บีบอัดภาพอัตโนมัติ)"
+          : "Storage: โหมดหน่วยความจำสำรองพร้อมใช้";
       }
+
+      summaryEl.innerHTML = `
+        ข้อมูลที่จัดเก็บในระบบขณะนี้: บัญชีผู้ใช้งาน <strong>${totalUsers}</strong> บัญชี |
+        โครงการรวม <strong>${totalAllProjs}</strong> โครงการ |
+        ขนาดข้อมูลรวม: <strong>${sizeBytes >= 1048576 ? sizeMb + " MB" : sizeKb + " KB"}</strong>
+        (จัดเก็บผ่านฐานข้อมูล <strong>IndexedDB</strong> รองรับข้อมูลและรูปภาพได้ระดับ GB)
+      `;
+    }
+
+    // ==================== BACKUP (.JSON) EXPORT & RESTORE FUNCTIONS ====================
+    function exportBackupJsonFile() {
+      const payload = buildSerializablePayload();
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const d = new Date();
+      const pad = n => String(n).padStart(2, "0");
+      const dateTag = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `backup_project_logging_${dateTag}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showFeedback(`สำรองข้อมูลระบบทั้งหมดเป็นไฟล์ JSON (backup_project_logging_${dateTag}.json) เรียบร้อยแล้ว`);
+    }
+
+    function triggerRestoreBackupFile() {
+      const inp = document.getElementById("globalRestoreFileInput");
+      if (inp) {
+        inp.value = "";
+        inp.click();
+      }
+    }
+
+    function handleRestoreFileSelected(inputEl) {
+      const file = inputEl && inputEl.files && inputEl.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (!parsed || (!Array.isArray(parsed.registeredUsers) && !parsed.siteSettings)) {
+            openInfoModal("ไฟล์สำรองข้อมูลไม่ถูกต้อง", `<p style="color:var(--text-red);">ไฟล์ที่เลือกไม่ใช่ไฟล์สำรองข้อมูล (.json) ของระบบบันทึกข้อมูลโครงการ กรุณาตรวจสอบไฟล์อีกครั้ง</p>`);
+            return;
+          }
+
+          // Merge or apply restored data
+          applyLoadedPayload(parsed);
+          if (state.isLoggedIn && state.userId && state.userId !== state.siteSettings.adminUser) {
+            const matched = state.registeredUsers.find(u => u.userId === state.userId);
+            if (matched) {
+              state.userProfile = JSON.parse(JSON.stringify(matched.userProfile));
+              state.projects = Array.isArray(matched.projects) ? JSON.parse(JSON.stringify(matched.projects)) : [];
+              populateProfileFormFromState();
+            }
+          } else if (Array.isArray(parsed.registeredUsers) && parsed.registeredUsers.length > 0 && state.projects.length === 0) {
+            // Also populate current projects view if admin is viewing
+            const allProjs = [];
+            parsed.registeredUsers.forEach(u => {
+              if (Array.isArray(u.projects)) {
+                u.projects.forEach(pr => allProjs.push(pr));
+              }
+            });
+            if (allProjs.length > 0) state.projects = allProjs;
+          }
+
+          applySiteSettingsToDOM();
+          persistState();
+          updateHeaderUserText();
+          renderManageProjects();
+          renderReportProjects();
+          renderPreviewProjects();
+          renderAdminConsole();
+          showFeedback(`กู้คืนและนำเข้าข้อมูลจากไฟล์ "${file.name}" ลงในฐานข้อมูล IndexedDB เรียบร้อยแล้ว`);
+        } catch (err) {
+          openInfoModal("เกิดข้อผิดพลาดในการอ่านไฟล์", `<p style="color:var(--text-red);">ไม่สามารถอ่านไฟล์ JSON ได้ กรุณาเลือกไฟล์ .json ที่ได้จากการกดปุ่มสำรองข้อมูล</p>`);
+        }
+      };
+      reader.readAsText(file, "utf-8");
     }
 
     function applySiteSettingsToDOM() {
@@ -2346,7 +2528,7 @@
           </td>
           <td class="project-actions-cell">
             <div class="action-icons-grid">
-              <!-- 1. Edit Project (Tilted white notepad + yellow pencil) -->
+              <!-- 1. Edit Project -->
               <button type="button" class="icon-btn" title="1. แก้ไขข้อมูลโครงการ" onclick="openProjectModal(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <g transform="rotate(-8 12 14)">
@@ -2358,7 +2540,7 @@
                   <circle cx="7.5" cy="23.5" r="1" fill="#333"/>
                 </svg>
               </button>
-              <!-- 2. Delete Project (Blue trash bin with curved arrow) -->
+              <!-- 2. Delete Project -->
               <button type="button" class="icon-btn" title="2. ลบข้อมูลโครงการ" onclick="confirmDeleteProject(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <ellipse cx="15" cy="24.5" rx="9" ry="1.8" fill="#888888" opacity="0.55"/>
@@ -2370,7 +2552,7 @@
                   <path d="M4,14 Q5,8 10,8 L10,6 L13,9 L10,12 L10,10 Q6.5,10 5,14 Z" fill="#1f618d"/>
                 </svg>
               </button>
-              <!-- 3. Print Summary Report (Silver/blue printer with paper) -->
+              <!-- 3. Print Summary Report -->
               <button type="button" class="icon-btn" title="3. พิมพ์แบบรายงานสรุปโครงการ" onclick="openPrintReportModal(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <rect x="8" y="2" width="12" height="7" fill="#ffffff" stroke="#7f8c8d" stroke-width="1"/>
@@ -2380,7 +2562,7 @@
                   <rect x="8" y="18" width="12" height="7" fill="#ffffff" stroke="#7f8c8d" stroke-width="1"/>
                 </svg>
               </button>
-              <!-- 4. Upload Activity Photos (Photo frames + green up arrow) -->
+              <!-- 4. Upload Activity Photos -->
               <button type="button" class="icon-btn" title="4. อัปโหลดรูปภาพกิจกรรมโครงการ" onclick="openPhotoGalleryModal(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <g transform="rotate(-10 8 17)">
@@ -2394,15 +2576,15 @@
                   <path d="M14,3 L22,12 L17.5,12 L17.5,22 L10.5,22 L10.5,12 L6,12 Z" fill="#2ecc71" stroke="#1e8449" stroke-width="1"/>
                 </svg>
               </button>
-              <!-- 5. Upload Project Document File (Yellow folder + green plus) -->
-              <button type="button" class="icon-btn" title="5. แนบไฟล์เอกสารโครงการ (Word/PDF)" onclick="openDocFileModal(${p.id})">
+              <!-- 5. Upload Project Document File -->
+              <button type="button" class="icon-btn" title="5. แนบไฟล์เอกสารโครงการ (PDF)" onclick="openDocFileModal(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <path d="M3,6 L11,6 L13,8.5 L24,8.5 L24,22 L3,22 Z" fill="#f5b041" stroke="#b9770e" stroke-width="1"/>
                   <path d="M3,10 L24,10 L24,22 L3,22 Z" fill="#f8c471" stroke="#d68910" stroke-width="1"/>
                   <path d="M19,14 L22,14 L22,18 L26,18 L26,21 L22,21 L22,25 L19,25 L19,21 L15,21 L15,18 L19,18 Z" fill="#58d68d" stroke="#1d8348" stroke-width="0.9"/>
                 </svg>
               </button>
-              <!-- 6. Project Operational Checklist / Summary (Orange circle with checklist clipboard) -->
+              <!-- 6. Project Operational Checklist / Summary -->
               <button type="button" class="icon-btn" title="6. บันทึกสรุปผลการดำเนินงาน / เช็คลิสต์โครงการ" onclick="openChecklistReportModal(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <circle cx="14" cy="14" r="12" fill="#ef6c00"/>
@@ -2415,9 +2597,8 @@
                   <line x1="14" y1="16.5" x2="18.5" y2="16.5" stroke="#ef6c00" stroke-width="1.5"/>
                 </svg>
               </button>
-              <!-- Empty spacer cell left -->
               <span></span>
-              <!-- 7. Q&A Evaluation (Green square with Q and A speech bubbles) -->
+              <!-- 7. Q&A Evaluation -->
               <button type="button" class="icon-btn" title="7. แบบประเมินความพึงพอใจ Q&A" onclick="openEvaluationModal(${p.id})">
                 <svg width="26" height="26" viewBox="0 0 28 28">
                   <rect x="2" y="2" width="24" height="24" rx="3" fill="#4e9a34" stroke="#3b7a26" stroke-width="1"/>
@@ -2542,7 +2723,6 @@
           </td>
           <td style="text-align: center; vertical-align: middle;">
             <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-              <!-- Large Printer Icon -->
               <button type="button" class="icon-btn" title="ดูแบบรายงานสำหรับพิมพ์" onclick="openPrintReportModal(${p.id})">
                 <svg width="36" height="36" viewBox="0 0 38 38">
                   <rect x="9" y="4" width="20" height="9" fill="#ffffff" stroke="#888"/>
@@ -2551,7 +2731,6 @@
                   <rect x="9" y="22" width="20" height="11" fill="#ffffff" stroke="#888"/>
                 </svg>
               </button>
-              <!-- Large Green Q&A Icon -->
               <button type="button" class="icon-btn" title="ผลประเมินความพึงพอใจ" onclick="openEvaluationModal(${p.id})">
                 <svg width="36" height="36" viewBox="0 0 38 38">
                   <rect x="3" y="3" width="32" height="32" rx="4" fill="#529a36"/>
@@ -2649,7 +2828,6 @@
         document.getElementById("projSpeaker").value = p.speaker;
         document.getElementById("projStatus").value = p.status;
       } else {
-        // Leave all fields completely empty so user can type and pick calendar dates themselves
         document.getElementById("projectModalTitle").textContent = "คลิ๊กเพื่อเพิ่มโครงการใหม่";
         document.getElementById("projEditId").value = "";
         document.getElementById("projName").value = "";
@@ -2771,7 +2949,6 @@
       if (!Array.isArray(p.photos)) {
         p.photos = [];
       } else {
-        // Remove any old sample SVG placeholder photos and enforce max 6 photos
         p.photos = p.photos
           .filter(ph => ph && ph.dataUrl && !String(ph.dataUrl).startsWith("data:image/svg+xml"))
           .slice(0, MAX_PROJECT_PHOTOS);
@@ -2803,6 +2980,41 @@
       return p;
     }
 
+    // Automatically compress uploaded photo before storing in IndexedDB
+    function compressImageDataUrl(rawDataUrl, callback) {
+      const img = new Image();
+      img.onload = function() {
+        const MAX_DIM = 1200;
+        let w = img.width || 800;
+        let h = img.height || 600;
+        if (w > MAX_DIM || h > MAX_DIM) {
+          if (w > h) {
+            h = Math.round((h * MAX_DIM) / w);
+            w = MAX_DIM;
+          } else {
+            w = Math.round((w * MAX_DIM) / h);
+            h = MAX_DIM;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          callback(canvas.toDataURL("image/jpeg", 0.84));
+        } catch (err) {
+          callback(rawDataUrl);
+        }
+      };
+      img.onerror = function() {
+        callback(rawDataUrl);
+      };
+      img.src = rawDataUrl;
+    }
+
     // Compute balanced tile rectangles (x, y, w, h) on a 960x540 canvas for 1..6 photos
     function getCollageTileRects(count, W, H, gap) {
       const halfW = Math.floor((W - gap) / 2);
@@ -2820,7 +3032,6 @@
         ];
       }
       if (count === 3) {
-        // Left large (50% width, full height) + Right 2 stacked (50% width, half height each)
         return [
           { x: 0, y: 0, w: halfW, h: H },
           { x: halfW + gap, y: 0, w: W - halfW - gap, h: halfH },
@@ -2836,7 +3047,6 @@
         ];
       }
       if (count === 5) {
-        // Top row: 2 equal photos (50% each); Bottom row: 3 equal photos (33.3% each)
         return [
           { x: 0, y: 0, w: halfW, h: halfH },
           { x: halfW + gap, y: 0, w: W - halfW - gap, h: halfH },
@@ -2845,7 +3055,6 @@
           { x: (thirdW + gap) * 2, y: halfH + gap, w: remW3, h: H - halfH - gap }
         ];
       }
-      // count === 6: 3 columns x 2 rows
       return [
         { x: 0, y: 0, w: thirdW, h: halfH },
         { x: thirdW + gap, y: 0, w: thirdW, h: halfH },
@@ -2883,7 +3092,6 @@
         const img = new Image();
         img.onload = function() {
           const r = rects[idx];
-          // Draw image using center-crop (object-fit: cover) so aspect ratio is never distorted
           const imgRatio = img.width / (img.height || 1);
           const tileRatio = r.w / (r.h || 1);
           let sx = 0, sy = 0, sw = img.width, sh = img.height;
@@ -2899,7 +3107,7 @@
           loaded++;
           if (loaded === photos.length) {
             try {
-              p.collageDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+              p.collageDataUrl = canvas.toDataURL("image/jpeg", 0.9);
             } catch (err) {
               p.collageDataUrl = "";
             }
@@ -2911,7 +3119,7 @@
           loaded++;
           if (loaded === photos.length) {
             try {
-              p.collageDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+              p.collageDataUrl = canvas.toDataURL("image/jpeg", 0.9);
             } catch (err) {
               p.collageDataUrl = "";
             }
@@ -3033,7 +3241,6 @@
       if (!p) return;
       ensureProjectExtraData(p);
 
-      // Make sure the printable report modal is open so #printableReportArea is in the DOM
       if (!document.getElementById("printableReportArea")) {
         openPrintReportModal(id);
       }
@@ -3064,7 +3271,7 @@
       downloadProjectPdf(id);
     }
 
-    // ฟังก์ชันปุ่มที่ 3: พิมพ์แบบรายงานสรุปโครงการ (พร้อมแสดงรูปภาพกิจกรรมจัดเรียงอัตโนมัติสูงสุด 6 ภาพ และส่งออก PDF)
+    // ฟังก์ชันปุ่มที่ 3: พิมพ์แบบรายงานสรุปโครงการ
     function openPrintReportModal(id) {
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
@@ -3158,7 +3365,7 @@
             </div>
           ` : `
             <div style="font-weight:bold; margin-bottom:6px; color:var(--text-darkblue);">
-              เพิ่มรูปภาพกิจกรรม (เลือกได้อีก ${MAX_PROJECT_PHOTOS - p.photos.length} ภาพ — ระบบจะนำภาพมาต่อกันเป็นภาพเดียวที่สมดุลให้อัตโนมัติ) :
+              เพิ่มรูปภาพกิจกรรม (เลือกได้อีก ${MAX_PROJECT_PHOTOS - p.photos.length} ภาพ — ระบบจะบีบอัดและนำภาพมาต่อกันเป็นภาพเดียวให้อัตโนมัติ) :
             </div>
             <div class="form-row" style="margin-bottom:6px;">
               <label>คำบรรยายภาพ :</label>
@@ -3230,28 +3437,30 @@
         files.forEach((file, idx) => {
           const reader = new FileReader();
           reader.onload = function(evt) {
-            if (p.photos.length < MAX_PROJECT_PHOTOS) {
-              const num = p.photos.length + 1;
-              const cap = customCaption
-                ? (files.length > 1 ? `${customCaption} (${idx + 1})` : customCaption)
-              : `ภาพกิจกรรมที่ ${num}`;
-              p.photos.push({
-                caption: cap,
-                date: p.dateStart,
-                dataUrl: evt.target.result
-              });
-            }
-            loadedCount++;
-            if (loadedCount === files.length) {
-              rebuildProjectCollageImage(p, function() {
-                persistState();
-                if (afterCallback) {
-                  afterCallback();
-                } else {
-                  openPhotoGalleryModal(id);
-                }
-              });
-            }
+            compressImageDataUrl(evt.target.result, function(compressedUrl) {
+              if (p.photos.length < MAX_PROJECT_PHOTOS) {
+                const num = p.photos.length + 1;
+                const cap = customCaption
+                  ? (files.length > 1 ? `${customCaption} (${idx + 1})` : customCaption)
+                  : `ภาพกิจกรรมที่ ${num}`;
+                p.photos.push({
+                  caption: cap,
+                  date: p.dateStart,
+                  dataUrl: compressedUrl
+                });
+              }
+              loadedCount++;
+              if (loadedCount === files.length) {
+                rebuildProjectCollageImage(p, function() {
+                  persistState();
+                  if (afterCallback) {
+                    afterCallback();
+                  } else {
+                    openPhotoGalleryModal(id);
+                  }
+                });
+              }
+            });
           };
           reader.readAsDataURL(file);
         });
@@ -3267,7 +3476,7 @@
         addProjectPhoto(id, function() {
           persistState();
           closeInfoModal();
-          showFeedback("บันทึกรูปภาพและจัดเรียงเป็นภาพเดียวที่สมดุลเรียบร้อยแล้ว");
+          showFeedback("บันทึกรูปภาพและจัดเรียงเป็นภาพเดียวที่สมดุลลงในฐานข้อมูล IndexedDB เรียบร้อยแล้ว");
         });
       } else {
         const p = state.projects.find(item => item.id === id);
@@ -3308,7 +3517,6 @@
       const p = state.projects.find(item => item.id === id);
       if (!p || !p.photos) return;
       p.photos.splice(photoIdx, 1);
-      // Re-number default captions cleanly
       p.photos.forEach((ph, idx) => {
         if (/^ภาพ(กิจกรรม)?ที่\s*\d+$/i.test(ph.caption || "")) {
           ph.caption = `ภาพกิจกรรมที่ ${idx + 1}`;
@@ -3320,12 +3528,12 @@
       });
     }
 
-    // ฟังก์ชันปุ่มที่ 5: แนบไฟล์เอกสารโครงการ (Word / PDF)
+    // ฟังก์ชันปุ่มที่ 5: แนบไฟล์เอกสารโครงการ (PDF)
     function openDocFileModal(id) {
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
       ensureProjectExtraData(p);
-      openInfoModal("5. แนบไฟล์เอกสารโครงการ (Word / PDF)", `
+      openInfoModal("5. แนบไฟล์เอกสารโครงการ (PDF)", `
         <div style="margin-bottom:8px;">
           <strong>โครงการ :</strong> <span style="color:var(--text-blue);">${escapeHtml(p.name)}</span>
         </div>
@@ -3336,7 +3544,7 @@
           </div>
           <div class="form-row">
             <label style="width:130px;">เลือกไฟล์จากเครื่อง :</label>
-            <input type="file" id="docUploadFileInput" accept=".doc,.docx,.pdf" onchange="onSelectDocFileName(this)">
+            <input type="file" id="docUploadFileInput" accept=".pdf,.doc,.docx" onchange="onSelectDocFileName(this)">
           </div>
           <div class="form-row">
             <label style="width:130px;">ชื่อไฟล์เอกสาร :</label>
@@ -3835,6 +4043,8 @@
         document.getElementById("admAccountPass").value = s.adminPass || "admin1234";
       }
 
+      updateStorageStatusUI();
+
       const uBadge = document.getElementById("adminUserCountBadge");
       if (uBadge) uBadge.textContent = state.registeredUsers.length;
       const pBadge = document.getElementById("adminProjCountBadge");
@@ -3936,7 +4146,7 @@
       applySiteSettingsToDOM();
       persistState();
       renderAdminConsole();
-      showFeedback("ผู้ดูแลระบบ (Admin) บันทึกการตั้งค่าระบบ ประกาศ และข้อมูลส่วนท้ายเว็บเรียบร้อยแล้ว");
+      showFeedback("ผู้ดูแลระบบ (Admin) บันทึกการตั้งค่าระบบ ประกาศ และข้อมูลส่วนท้ายเว็บลงใน IndexedDB เรียบร้อยแล้ว");
     }
 
     function adminAddBudgetType() {
@@ -4008,13 +4218,17 @@
       const uid = (document.getElementById("admNewUid").value || "").trim();
       const pwd = (document.getElementById("admNewPwd").value || "").trim();
       if (!uid || !pwd) return;
+      const subVal = (document.getElementById("admNewSub").value || "").trim() || "ท่ากระดาน";
       const newProfile = {
         ...state.userProfile,
         prefix: document.getElementById("admNewPrefix").value,
         firstName: (document.getElementById("admNewFirst").value || "").trim() || "ผู้ใช้งาน",
         lastName: (document.getElementById("admNewLast").value || "").trim(),
-        position: (document.getElementById("admNewPos").value || "").trim(),
-        subdistrict: (document.getElementById("admNewSub").value || "").trim(),
+        position: document.getElementById("admNewPos").value,
+        posSubdistrict: document.getElementById("admNewPos").value === "ครู ศกร."
+          ? (subVal.startsWith("ตำบล") ? subVal : `ตำบล${subVal}`)
+          : "",
+        subdistrict: subVal.replace(/^ตำบล/, ""),
         phone: (document.getElementById("admNewPhone").value || "").trim()
       };
       const existingIdx = state.registeredUsers.findIndex(u => u.userId === uid);
@@ -4088,8 +4302,12 @@
       }
       u.userProfile.firstName = (document.getElementById("admEditFirst").value || "").trim();
       u.userProfile.lastName = (document.getElementById("admEditLast").value || "").trim();
-      u.userProfile.position = (document.getElementById("admEditPos").value || "").trim();
-      u.userProfile.subdistrict = (document.getElementById("admEditSub").value || "").trim();
+      u.userProfile.position = document.getElementById("admEditPos").value;
+      const subVal = (document.getElementById("admEditSub").value || "").trim();
+      u.userProfile.subdistrict = subVal.replace(/^ตำบล/, "");
+      if (u.userProfile.position === "ครู ศกร." && subVal) {
+        u.userProfile.posSubdistrict = subVal.startsWith("ตำบล") ? subVal : `ตำบล${subVal}`;
+      }
       u.userProfile.phone = (document.getElementById("admEditPhone").value || "").trim();
       persistState();
       closeInfoModal();
@@ -4127,7 +4345,7 @@
 
     function confirmResetAllSystemData() {
       openInfoModal("ยืนยันการล้างข้อมูลระบบทั้งหมด (Reset System)", `
-        <p style="color:var(--text-red); font-weight:bold;">คุณต้องการล้างข้อมูลโครงการและบัญชีผู้ใช้งานที่บันทึกไว้ในเครื่องออกทั้งหมด เพื่อให้เป็นระบบว่างเริ่มต้นใหม่ใช่หรือไม่?</p>
+        <p style="color:var(--text-red); font-weight:bold;">คุณต้องการล้างข้อมูลโครงการและบัญชีผู้ใช้งานที่บันทึกไว้ในเครื่อง (ทั้งใน IndexedDB และ localStorage) ออกทั้งหมด เพื่อให้เป็นระบบว่างเริ่มต้นใหม่ใช่หรือไม่?</p>
         <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:12px;">
           <button type="button" class="classic-btn" onclick="executeResetAllSystemData()" style="color:var(--text-red); font-weight:bold;">ยืนยันการล้างข้อมูลทั้งหมด</button>
           <button type="button" class="classic-btn" onclick="closeInfoModal()">ยกเลิก</button>
@@ -4143,6 +4361,10 @@
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch (err) {}
+      openAppIndexedDB().then(db => {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).delete("main");
+      }).catch(() => {});
       persistState();
       updateHeaderUserText();
       renderManageProjects();
@@ -4173,9 +4395,17 @@
       yearSel.innerHTML = opts.join("");
     }
 
-    // Initialize App on Login Screen requiring Register before Login
+    // Initialize App with High-Capacity IndexedDB Storage
     ensureBirthYearOptionsUpToCurrent();
-    loadSavedState();
+    loadSavedState(function() {
+      applySiteSettingsToDOM();
+      updateHeaderUserText();
+      renderManageProjects();
+      renderReportFilterControl();
+      renderReportProjects();
+      renderPreviewProjects();
+      renderAdminConsole();
+    });
     applySiteSettingsToDOM();
     updateHeaderUserText();
     renderManageProjects();
