@@ -604,38 +604,70 @@
       padding: 14px;
     }
 
-    /* Printable Report Activity Photos Grid */
-    .report-photo-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+    /* Printable Report Activity Photos - Unified Balanced Single Collage */
+    .report-collage-wrapper {
       margin-top: 8px;
-    }
-
-    .report-photo-card {
-      border: 1px solid #90caf9;
-      background: #f9fcff;
+      border: 2px solid #1976d2;
+      background: #ffffff;
       padding: 6px;
-      text-align: center;
-      border-radius: 4px;
+      border-radius: 6px;
       break-inside: avoid;
       page-break-inside: avoid;
+      box-shadow: 0 2px 5px rgba(21, 101, 192, 0.1);
     }
 
-    .report-photo-card img {
+    .report-single-collage-img {
       width: 100%;
-      height: 135px;
-      object-fit: cover;
-      border: 1px solid #cfe8fc;
-      background: #ffffff;
+      max-height: 310px;
+      object-fit: contain;
       display: block;
-      margin-bottom: 4px;
+      margin: 0 auto;
+      border-radius: 3px;
     }
 
-    .report-photo-caption {
-      font-size: 11.5px;
+    /* Seamless CSS fallback collage mosaic when canvas is still rendering */
+    .seamless-collage-mosaic {
+      width: 100%;
+      height: 290px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      background: #ffffff;
+      overflow: hidden;
+      border-radius: 3px;
+    }
+
+    .seamless-collage-row {
+      flex: 1;
+      display: flex;
+      gap: 3px;
+      min-height: 0;
+    }
+
+    .seamless-collage-cell {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      background: #eaf4fc;
+    }
+
+    .seamless-collage-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    .report-collage-caption-bar {
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px dashed #90caf9;
+      text-align: center;
+      font-size: 12px;
       color: var(--text-darkblue);
-      line-height: 1.35;
     }
 
     /* Print Media Stylesheet so attached images print cleanly */
@@ -672,6 +704,7 @@
       }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -1087,8 +1120,8 @@
                 </select>
                 <label>ตำแหน่ง :</label>
                 <select id="profPosition">
-                  <option value="ครู กศน.ตำบล" selected>ครู กศน.ตำบล</option>
-                  <option value="ครูอาสาสมัครฯ">ครูอาสาสมัครฯ</option>
+                  <option value="ครู" selected>ครู</option>
+                  <option value="ครู ศกร.">ครู ศกร.</option>
                   <option value="บรรณารักษ์">บรรณารักษ์</option>
                   <option value="ผู้บริหารสถานศึกษา">ผู้บริหารสถานศึกษา</option>
                 </select>
@@ -1665,7 +1698,7 @@
         birthMonth: "มกราคม",
         birthYear: "1972",
         agency: "- กศน.อำเภอคีรีรัฐนิคม -",
-        position: "ครู กศน.ตำบล",
+        position: "ครู",
         address: "1 หมู่ 1",
         province: "สุราษฎร์ธานี",
         district: "คีรีรัฐนิคม",
@@ -1783,7 +1816,8 @@
       document.getElementById("profBirthMonth").value = up.birthMonth || "มกราคม";
       document.getElementById("profBirthYear").value = up.birthYear || "1972";
       document.getElementById("profAgency").value = up.agency || "- กศน.อำเภอคีรีรัฐนิคม -";
-      document.getElementById("profPosition").value = up.position || "ครู กศน.ตำบล";
+      const validPositions = ["ครู", "ครู ศกร.", "บรรณารักษ์", "ผู้บริหารสถานศึกษา"];
+      document.getElementById("profPosition").value = validPositions.includes(up.position) ? up.position : "ครู";
       document.getElementById("profAddress").value = up.address || "";
       document.getElementById("profSubdistrict").value = up.subdistrict || "ท่ากระดาน";
       document.getElementById("profZip").value = up.zip || "";
@@ -2103,17 +2137,16 @@
       document.getElementById("confirmPassInput").value = "";
     }
 
-    // SVG Helpers for Table Rows
+    // SVG Helpers for Table Rows (PDF Document Icon)
     function getWordIconSvg() {
       return `
         <svg width="36" height="34" viewBox="0 0 38 36">
-          <rect x="10" y="2" width="24" height="30" rx="1" fill="#ffffff" stroke="#2b579a" stroke-width="1.5"/>
-          <line x1="16" y1="8" x2="30" y2="8" stroke="#2b579a" stroke-width="1.5"/>
-          <line x1="16" y1="13" x2="30" y2="13" stroke="#2b579a" stroke-width="1.5"/>
-          <line x1="16" y1="18" x2="30" y2="18" stroke="#2b579a" stroke-width="1.5"/>
-          <line x1="16" y1="23" x2="26" y2="23" stroke="#2b579a" stroke-width="1.5"/>
-          <path d="M2,7 L20,4 L20,32 L2,29 Z" fill="#2b579a"/>
-          <text x="11" y="22" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold" font-size="13">W</text>
+          <rect x="8" y="2" width="24" height="31" rx="2" fill="#ffffff" stroke="#c62828" stroke-width="1.5"/>
+          <path d="M24,2 L32,10 L24,10 Z" fill="#ffcdd2" stroke="#c62828" stroke-width="1"/>
+          <line x1="13" y1="9" x2="21" y2="9" stroke="#e57373" stroke-width="1.4"/>
+          <line x1="13" y1="13" x2="27" y2="13" stroke="#e57373" stroke-width="1.4"/>
+          <rect x="3" y="17" width="26" height="12" rx="2" fill="#d32f2f"/>
+          <text x="16" y="26" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="bold" font-size="10.5">PDF</text>
         </svg>
       `;
     }
@@ -2583,42 +2616,22 @@
       openPrintReportModal(id);
     }
 
+    const MAX_PROJECT_PHOTOS = 6;
+
     function ensureProjectExtraData(p) {
-      if (!p.docFileName) {
-        p.docFileName = `โครงการ_${p.code}.doc`;
+      if (!p.docFileName || p.docFileName.endsWith(".doc")) {
+        p.docFileName = `โครงการ_${p.code}.pdf`;
       }
       if (!p.docObjective) {
         p.docObjective = `เพื่อส่งเสริมการเรียนรู้และพัฒนาทักษะให้แก่ประชาชนกลุ่มเป้าหมายในพื้นที่ (${p.name})`;
       }
-      if (!p.photos) {
-        p.photos = [
-          {
-            caption: "ภาพที่ 1: พิธีเปิดและชี้แจงวัตถุประสงค์การจัดโครงการ",
-            date: p.dateStart,
-            dataUrl: createDefaultPhotoDataUrl(1, p.name, p.dateStart)
-          },
-          {
-            caption: `ภาพที่ 2: วิทยากร (${p.speaker}) ให้ความรู้และสาธิตการปฏิบัติ`,
-            date: p.dateStart,
-            dataUrl: createDefaultPhotoDataUrl(2, p.name, p.dateStart)
-          },
-          {
-            caption: "ภาพที่ 3: ผู้เข้าร่วมโครงการฝึกปฏิบัติจริงและแลกเปลี่ยนเรียนรู้",
-            date: p.dateEnd,
-            dataUrl: createDefaultPhotoDataUrl(3, p.name, p.dateEnd)
-          },
-          {
-            caption: "ภาพที่ 4: สรุปผลการเรียนรู้และถ่ายภาพร่วมกัน",
-            date: p.dateEnd,
-            dataUrl: createDefaultPhotoDataUrl(4, p.name, p.dateEnd)
-          }
-        ];
+      if (!Array.isArray(p.photos)) {
+        p.photos = [];
       } else {
-        p.photos.forEach((ph, idx) => {
-          if (!ph.dataUrl) {
-            ph.dataUrl = createDefaultPhotoDataUrl(idx + 1, p.name, ph.date || p.dateStart);
-          }
-        });
+        // Remove any old sample SVG placeholder photos and enforce max 6 photos
+        p.photos = p.photos
+          .filter(ph => ph && ph.dataUrl && !String(ph.dataUrl).startsWith("data:image/svg+xml"))
+          .slice(0, MAX_PROJECT_PHOTOS);
       }
       if (!p.checklist) {
         p.checklist = {
@@ -2647,22 +2660,195 @@
       return p;
     }
 
-    function buildReportPhotosGridHtml(p) {
+    // Compute balanced tile rectangles (x, y, w, h) on a 960x540 canvas for 1..6 photos
+    function getCollageTileRects(count, W, H, gap) {
+      const halfW = Math.floor((W - gap) / 2);
+      const halfH = Math.floor((H - gap) / 2);
+      const thirdW = Math.floor((W - gap * 2) / 3);
+      const remW3 = W - (thirdW * 2 + gap * 2);
+
+      if (count === 1) {
+        return [{ x: 0, y: 0, w: W, h: H }];
+      }
+      if (count === 2) {
+        return [
+          { x: 0, y: 0, w: halfW, h: H },
+          { x: halfW + gap, y: 0, w: W - halfW - gap, h: H }
+        ];
+      }
+      if (count === 3) {
+        // Left large (50% width, full height) + Right 2 stacked (50% width, half height each)
+        return [
+          { x: 0, y: 0, w: halfW, h: H },
+          { x: halfW + gap, y: 0, w: W - halfW - gap, h: halfH },
+          { x: halfW + gap, y: halfH + gap, w: W - halfW - gap, h: H - halfH - gap }
+        ];
+      }
+      if (count === 4) {
+        return [
+          { x: 0, y: 0, w: halfW, h: halfH },
+          { x: halfW + gap, y: 0, w: W - halfW - gap, h: halfH },
+          { x: 0, y: halfH + gap, w: halfW, h: H - halfH - gap },
+          { x: halfW + gap, y: halfH + gap, w: W - halfW - gap, h: H - halfH - gap }
+        ];
+      }
+      if (count === 5) {
+        // Top row: 2 equal photos (50% each); Bottom row: 3 equal photos (33.3% each)
+        return [
+          { x: 0, y: 0, w: halfW, h: halfH },
+          { x: halfW + gap, y: 0, w: W - halfW - gap, h: halfH },
+          { x: 0, y: halfH + gap, w: thirdW, h: H - halfH - gap },
+          { x: thirdW + gap, y: halfH + gap, w: thirdW, h: H - halfH - gap },
+          { x: (thirdW + gap) * 2, y: halfH + gap, w: remW3, h: H - halfH - gap }
+        ];
+      }
+      // count === 6: 3 columns x 2 rows
+      return [
+        { x: 0, y: 0, w: thirdW, h: halfH },
+        { x: thirdW + gap, y: 0, w: thirdW, h: halfH },
+        { x: (thirdW + gap) * 2, y: 0, w: remW3, h: halfH },
+        { x: 0, y: halfH + gap, w: thirdW, h: H - halfH - gap },
+        { x: thirdW + gap, y: halfH + gap, w: thirdW, h: H - halfH - gap },
+        { x: (thirdW + gap) * 2, y: halfH + gap, w: remW3, h: H - halfH - gap }
+      ];
+    }
+
+    // Stitch 1..6 uploaded photos into a single balanced composite JPEG image (p.collageDataUrl)
+    function rebuildProjectCollageImage(p, callback) {
       ensureProjectExtraData(p);
-      if (!p.photos || p.photos.length === 0) {
-        return `<div style="padding:8px; color:#666;">- ไม่มีภาพกิจกรรมที่แนบในระบบ -</div>`;
+      const photos = (p.photos || []).slice(0, MAX_PROJECT_PHOTOS);
+      if (photos.length === 0) {
+        p.collageDataUrl = "";
+        if (callback) callback("");
+        return;
+      }
+
+      const W = 960;
+      const H = 540;
+      const gap = 6;
+      const canvas = document.createElement("canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, W, H);
+
+      const rects = getCollageTileRects(photos.length, W, H, gap);
+      let loaded = 0;
+
+      photos.forEach((ph, idx) => {
+        const img = new Image();
+        img.onload = function() {
+          const r = rects[idx];
+          // Draw image using center-crop (object-fit: cover) so aspect ratio is never distorted
+          const imgRatio = img.width / (img.height || 1);
+          const tileRatio = r.w / (r.h || 1);
+          let sx = 0, sy = 0, sw = img.width, sh = img.height;
+          if (imgRatio > tileRatio) {
+            sw = img.height * tileRatio;
+            sx = (img.width - sw) / 2;
+          } else {
+            sh = img.width / tileRatio;
+            sy = (img.height - sh) / 2;
+          }
+          ctx.drawImage(img, sx, sy, sw, sh, r.x, r.y, r.w, r.h);
+
+          loaded++;
+          if (loaded === photos.length) {
+            try {
+              p.collageDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+            } catch (err) {
+              p.collageDataUrl = "";
+            }
+            persistState();
+            if (callback) callback(p.collageDataUrl);
+          }
+        };
+        img.onerror = function() {
+          loaded++;
+          if (loaded === photos.length) {
+            try {
+              p.collageDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+            } catch (err) {
+              p.collageDataUrl = "";
+            }
+            persistState();
+            if (callback) callback(p.collageDataUrl);
+          }
+        };
+        img.src = ph.dataUrl;
+      });
+    }
+
+    function buildSeamlessFallbackMosaicHtml(photos) {
+      const n = photos.length;
+      const cell = ph => `<div class="seamless-collage-cell"><img src="${ph.dataUrl}" alt="${escapeHtml(ph.caption || 'ภาพกิจกรรม')}"></div>`;
+      if (n === 1) {
+        return `<div class="seamless-collage-mosaic"><div class="seamless-collage-row">${cell(photos[0])}</div></div>`;
+      }
+      if (n === 2) {
+        return `<div class="seamless-collage-mosaic"><div class="seamless-collage-row">${cell(photos[0])}${cell(photos[1])}</div></div>`;
+      }
+      if (n === 3) {
+        return `
+          <div class="seamless-collage-mosaic" style="flex-direction:row;">
+            <div class="seamless-collage-cell" style="flex:1;">
+              <img src="${photos[0].dataUrl}" alt="${escapeHtml(photos[0].caption || 'ภาพกิจกรรม')}">
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:3px;">
+              ${cell(photos[1])}
+              ${cell(photos[2])}
+            </div>
+          </div>
+        `;
+      }
+      if (n === 4) {
+        return `
+          <div class="seamless-collage-mosaic">
+            <div class="seamless-collage-row">${cell(photos[0])}${cell(photos[1])}</div>
+            <div class="seamless-collage-row">${cell(photos[2])}${cell(photos[3])}</div>
+          </div>
+        `;
+      }
+      if (n === 5) {
+        return `
+          <div class="seamless-collage-mosaic">
+            <div class="seamless-collage-row">${cell(photos[0])}${cell(photos[1])}</div>
+            <div class="seamless-collage-row">${cell(photos[2])}${cell(photos[3])}${cell(photos[4])}</div>
+          </div>
+        `;
       }
       return `
-        <div class="report-photo-grid">
-          ${p.photos.map((ph, idx) => `
-            <div class="report-photo-card">
-              <img src="${ph.dataUrl || createDefaultPhotoDataUrl(idx + 1, p.name, ph.date || p.dateStart)}" alt="${escapeHtml(ph.caption)}">
-              <div class="report-photo-caption">
-                <strong>${escapeHtml(ph.caption)}</strong><br>
-                <span style="color:#555;">วันที่: ${escapeHtml(ph.date || p.dateStart)}</span>
-              </div>
-            </div>
-          `).join("")}
+        <div class="seamless-collage-mosaic">
+          <div class="seamless-collage-row">${cell(photos[0])}${cell(photos[1])}${cell(photos[2])}</div>
+          <div class="seamless-collage-row">${cell(photos[3])}${cell(photos[4])}${cell(photos[5])}</div>
+        </div>
+      `;
+    }
+
+    function buildReportPhotosGridHtml(p) {
+      ensureProjectExtraData(p);
+      const photos = (p.photos || []).slice(0, MAX_PROJECT_PHOTOS);
+      if (photos.length === 0) {
+        return `<div style="padding:10px; color:#666; background:#f9fcff; border:1px dashed #90caf9; text-align:center;">- ยังไม่มีภาพกิจกรรมที่แนบในระบบ (สามารถกดปุ่ม "+ เพิ่ม/จัดการรูปภาพกิจกรรม" เพื่ออัปโหลดรูปภาพได้สูงสุด 6 ภาพ) -</div>`;
+      }
+
+      const customCaptions = photos
+        .map(ph => (ph.caption || "").trim())
+        .filter(c => c && !/^ภาพ(กิจกรรม)?ที่\s*\d+$/i.test(c));
+      const captionSummary = customCaptions.length > 0
+        ? customCaptions.join(" | ")
+        : `ประมวลภาพการจัดกิจกรรมโครงการ (${photos.length} ภาพ) วันที่ ${p.dateStart || "-"}`;
+
+      return `
+        <div class="report-collage-wrapper">
+          ${p.collageDataUrl
+            ? `<img src="${p.collageDataUrl}" alt="ประมวลภาพกิจกรรมรวม" class="report-single-collage-img">`
+            : buildSeamlessFallbackMosaicHtml(photos)
+          }
+          <div class="report-collage-caption-bar">
+            <strong>${escapeHtml(captionSummary)}</strong>
+          </div>
         </div>
       `;
     }
@@ -2671,7 +2857,7 @@
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
       ensureProjectExtraData(p);
-      openInfoModal("ไฟล์เอกสารโครงการ (Word Document)", `
+      openInfoModal("ไฟล์เอกสารโครงการ (PDF Document)", `
         <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap;">
           <div style="display:flex; align-items:center; gap:10px;">
             ${getWordIconSvg()}
@@ -2680,16 +2866,16 @@
               <span style="color:#555;">รหัสโครงการ: ${escapeHtml(p.code)} | ผู้จัดทำ: ${escapeHtml(getFullName())}</span>
             </div>
           </div>
-          <button type="button" class="classic-btn" onclick="downloadProjectWordDoc(${p.id})">ดาวน์โหลดไฟล์ Word (.doc)</button>
+          <button type="button" class="classic-btn" onclick="downloadProjectPdf(${p.id})" style="font-weight:bold; color:#c62828;">ดาวน์โหลดเป็นไฟล์ PDF</button>
         </div>
-        <div style="background:#fff; border:1px solid #bbb; padding:12px; font-size:12.5px; line-height:1.55;">
+        <div id="printableDocViewArea" style="background:#fff; border:1px solid #bbb; padding:12px; font-size:12.5px; line-height:1.55;">
           <p style="margin:0 0 6px;"><strong>1. ชื่อโครงการ:</strong> ${escapeHtml(p.name)}</p>
           <p style="margin:0 0 6px;"><strong>2. วัตถุประสงค์:</strong> ${escapeHtml(p.docObjective)}</p>
           <p style="margin:0 0 6px;"><strong>3. ประเภทงบประมาณ:</strong> ${escapeHtml(p.budgetType)} (งบประมาณ ${formatNumber(p.budget)} บาท)</p>
           <p style="margin:0 0 6px;"><strong>4. สถานที่และระยะเวลา:</strong> ${escapeHtml(p.location)} (${escapeHtml(p.dateStart)} ถึง ${escapeHtml(p.dateEnd)}, ${escapeHtml(p.duration)})</p>
           <p style="margin:0 0 6px;"><strong>5. วิทยากร:</strong> ${escapeHtml(p.speaker)}</p>
           <p style="margin:0 0 10px;"><strong>6. ผลการดำเนินงาน:</strong> กลุ่มเป้าหมาย ${p.target} คน (ชาย ${p.male} คน / หญิง ${p.female} คน) สถานะ: ${escapeHtml(p.status)}</p>
-          <p style="margin:0 0 6px;"><strong>7. ประมวลภาพกิจกรรม (${p.photos.length} ภาพ):</strong></p>
+          <p style="margin:0 0 6px;"><strong>7. ประมวลภาพกิจกรรม (${p.photos.length} / ${MAX_PROJECT_PHOTOS} ภาพ):</strong></p>
           ${buildReportPhotosGridHtml(p)}
         </div>
         <div class="no-print" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
@@ -2699,73 +2885,43 @@
       `);
     }
 
-    function downloadProjectWordDoc(id) {
+    function downloadProjectPdf(id) {
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
       ensureProjectExtraData(p);
-      const total = Number(p.male) + Number(p.female);
-      const photosTableRows = [];
-      for (let i = 0; i < p.photos.length; i += 2) {
-        const ph1 = p.photos[i];
-        const ph2 = p.photos[i + 1];
-        photosTableRows.push(`
-          <tr>
-            <td style="width:50%; padding:8px; text-align:center; border:1px solid #90caf9; vertical-align:top;">
-              <img src="${ph1.dataUrl}" width="250" height="160" style="width:250px; height:160px; object-fit:cover; border:1px solid #ccc;"><br>
-              <div style="margin-top:4px; font-size:12pt;"><strong>${escapeHtml(ph1.caption)}</strong><br>วันที่: ${escapeHtml(ph1.date || p.dateStart)}</div>
-            </td>
-            <td style="width:50%; padding:8px; text-align:center; border:1px solid #90caf9; vertical-align:top;">
-              ${ph2 ? `
-                <img src="${ph2.dataUrl}" width="250" height="160" style="width:250px; height:160px; object-fit:cover; border:1px solid #ccc;"><br>
-                <div style="margin-top:4px; font-size:12pt;"><strong>${escapeHtml(ph2.caption)}</strong><br>วันที่: ${escapeHtml(ph2.date || p.dateStart)}</div>
-              ` : ""}
-            </td>
-          </tr>
-        `);
-      }
 
-      const wordHtml = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office"
-              xmlns:w="urn:schemas-microsoft-com:office:word">
-        <head><meta charset="utf-8"><title>${escapeHtml(p.name)}</title></head>
-        <body style="font-family:'TH SarabunPSK', Tahoma, sans-serif; font-size:14pt; line-height:1.5;">
-          <h2 style="text-align:center;">แบบรายงานสรุปผลการจัดโครงการ ปีงบประมาณ ${escapeHtml(state.budgetYear)}<br>สกร.ระดับอำเภอคีรีรัฐนิคม จังหวัดสุราษฎร์ธานี</h2>
-          <p><strong>1. ข้อมูลพื้นฐานโครงการ</strong></p>
-          <p><strong>รหัสโครงการ:</strong> ${escapeHtml(p.code)}<br>
-          <strong>ชื่อโครงการ:</strong> ${escapeHtml(p.name)}<br>
-          <strong>วัตถุประสงค์:</strong> ${escapeHtml(p.docObjective)}<br>
-          <strong>วันที่จัดโครงการ:</strong> ${escapeHtml(p.dateStart)} ถึง ${escapeHtml(p.dateEnd)} (${escapeHtml(p.duration)})<br>
-          <strong>สถานที่จัด:</strong> ${escapeHtml(p.location)}<br>
-          <strong>งบประมาณ:</strong> ${formatNumber(p.budget)} บาท (${escapeHtml(p.budgetType)})<br>
-          <strong>กลุ่มเป้าหมาย:</strong> ${p.target} คน (ชาย ${p.male} คน, หญิง ${p.female} คน, รวม ${total} คน)<br>
-          <strong>วิทยากร:</strong> ${escapeHtml(p.speaker)}<br>
-          <strong>สถานะโครงการ:</strong> ${escapeHtml(p.status)}</p>
-          <p><strong>2. สรุปผลการดำเนินงาน</strong><br>
-          - งบประมาณที่ใช้จริง: ${formatNumber(p.checklist.actualBudget)} บาท<br>
-          - ผลสำเร็จของการจัดโครงการ: ${escapeHtml(p.checklist.achievement)}<br>
-          - ปัญหา/อุปสรรค: ${escapeHtml(p.checklist.obstacle)}<br>
-          - ข้อเสนอแนะ: ${escapeHtml(p.checklist.suggestion)}</p>
-          <p><strong>3. ประมวลภาพกิจกรรมที่แนบในระบบ (${p.photos.length} ภาพ)</strong></p>
-          <table style="width:100%; border-collapse:collapse;">
-            ${photosTableRows.join("")}
-          </table>
-          <p style="margin-top:16px;"><strong>ผู้รายงานข้อมูล:</strong> ${escapeHtml(getFullName())} (${escapeHtml(state.userProfile.position)}) - ศกร.ระดับตำบล${escapeHtml(state.userProfile.subdistrict)}</p>
-        </body>
-        </html>
-      `;
-      const blob = new Blob(["\uFEFF" + wordHtml], { type: "application/msword;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = p.docFileName.endsWith(".doc") || p.docFileName.endsWith(".docx") ? p.docFileName : `${p.docFileName}.doc`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showFeedback(`ดาวน์โหลดไฟล์โครงการ "${p.docFileName}" พร้อมรูปภาพกิจกรรมเรียบร้อยแล้ว`);
+      // Make sure the printable report modal is open so #printableReportArea is in the DOM
+      if (!document.getElementById("printableReportArea")) {
+        openPrintReportModal(id);
+      }
+      const element = document.getElementById("printableReportArea");
+      const pdfFileName = p.docFileName && p.docFileName.toLowerCase().endsWith(".pdf")
+        ? p.docFileName
+        : `โครงการ_${p.code}.pdf`;
+
+      if (window.html2pdf && element) {
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: pdfFileName,
+          image: { type: "jpeg", quality: 0.96 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        };
+        window.html2pdf().set(opt).from(element).save().then(() => {
+          showFeedback(`ดาวน์โหลดเอกสารรายงานเป็นไฟล์ PDF (${pdfFileName}) เรียบร้อยแล้ว`);
+        }).catch(() => {
+          window.print();
+        });
+      } else {
+        window.print();
+      }
     }
 
-    // ฟังก์ชันปุ่มที่ 3: พิมพ์แบบรายงานสรุปโครงการ (พร้อมแสดงรูปภาพกิจกรรมในเอกสาร)
+    function downloadProjectWordDoc(id) {
+      downloadProjectPdf(id);
+    }
+
+    // ฟังก์ชันปุ่มที่ 3: พิมพ์แบบรายงานสรุปโครงการ (พร้อมแสดงรูปภาพกิจกรรมจัดเรียงอัตโนมัติสูงสุด 6 ภาพ และส่งออก PDF)
     function openPrintReportModal(id) {
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
@@ -2778,7 +2934,7 @@
          Number(p.evaluation.scoreUtility)) / 4
       ).toFixed(2);
 
-      openInfoModal("3. พิมพ์แบบรายงานสรุปผลการจัดโครงการ", `
+      openInfoModal("3. พิมพ์แบบรายงานสรุปผลการจัดโครงการ (ส่งออก PDF)", `
         <div id="printableReportArea" style="background:#ffffff; border:1px solid #90caf9; padding:14px; font-size:12.5px; line-height:1.5;">
           <div style="text-align:center; font-weight:bold; color:var(--text-darkblue); font-size:14px; margin-bottom:10px; border-bottom:2px solid #1976d2; padding-bottom:8px;">
             แบบรายงานสรุปผลการจัดโครงการ ปีงบประมาณ ${escapeHtml(state.budgetYear)}<br>
@@ -2799,7 +2955,7 @@
           <div style="margin-bottom:4px;"><strong>3. สรุปผลประเมินความพึงพอใจ (ผู้ตอบ ${p.evaluation.respondents} คน จาก ${total} คน)</strong></div>
           <div style="padding-left:10px; margin-bottom:10px;">
             <div>- คะแนนเฉลี่ยความพึงพอใจรวม : <strong style="color:var(--text-blue);">ร้อยละ ${avgEval} (ระดับดีมาก)</strong></div>
-            <div>- ภาพกิจกรรมที่แนบในระบบ : <strong style="color:var(--text-blue);">${p.photos.length} ภาพ</strong></div>
+            <div>- ภาพกิจกรรมที่แนบในระบบ : <strong style="color:var(--text-blue);">${p.photos.length} ภาพ (สูงสุดไม่เกิน ${MAX_PROJECT_PHOTOS} ภาพ)</strong></div>
           </div>
           <div style="margin-bottom:4px;"><strong>4. ประมวลภาพการจัดกิจกรรมโครงการ (${p.photos.length} ภาพ)</strong></div>
           ${buildReportPhotosGridHtml(p)}
@@ -2809,60 +2965,98 @@
           </div>
         </div>
         <div class="no-print" style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:10px; flex-wrap:wrap;">
-          <button type="button" class="classic-btn" onclick="openPhotoGalleryModal(${p.id})">+ เพิ่ม/จัดการรูปภาพกิจกรรม</button>
+          <button type="button" class="classic-btn" onclick="openPhotoGalleryModal(${p.id})">+ เพิ่ม/จัดการรูปภาพกิจกรรม (${p.photos.length}/${MAX_PROJECT_PHOTOS})</button>
           <div style="display:flex; gap:6px;">
             <button type="button" class="classic-btn" onclick="window.print()">สั่งพิมพ์รายงาน (Print)</button>
-            <button type="button" class="classic-btn" onclick="downloadProjectWordDoc(${p.id})">ดาวน์โหลดเป็นไฟล์ Word</button>
+            <button type="button" class="classic-btn" onclick="downloadProjectPdf(${p.id})" style="font-weight:bold; color:#c62828;">ดาวน์โหลดเป็นไฟล์ PDF</button>
             <button type="button" class="classic-btn" onclick="closeInfoModal()">ปิดหน้าต่าง</button>
           </div>
         </div>
       `);
     }
 
-    // ฟังก์ชันปุ่มที่ 4: อัปโหลดรูปภาพกิจกรรมโครงการ
+    // ฟังก์ชันปุ่มที่ 4: อัปโหลดรูปภาพกิจกรรมโครงการ (ไม่เกิน 6 ภาพ และจัดเรียงต่อกันเป็นภาพเดียวที่สมดุลอัตโนมัติ)
     function openPhotoGalleryModal(id) {
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
       ensureProjectExtraData(p);
+      const isFull = p.photos.length >= MAX_PROJECT_PHOTOS;
 
       const photosHtml = p.photos.map((ph, idx) => `
-        <div style="background:#ffffff; border:1px solid #90caf9; border-radius:4px; padding:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${ph.dataUrl}" alt="ภาพกิจกรรม" style="width:72px; height:52px; object-fit:cover; border:1px solid #1976d2; flex-shrink:0;">
-            <div>
-              <div style="font-weight:bold; color:var(--text-darkblue);">${escapeHtml(ph.caption)}</div>
-              <div style="font-size:11.5px; color:#555;">วันที่บันทึกภาพ: ${escapeHtml(ph.date || p.dateStart)}</div>
+        <div style="background:#ffffff; border:1px solid #90caf9; border-radius:4px; padding:6px 8px; display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px;">
+          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+            <img src="${ph.dataUrl}" alt="ภาพกิจกรรม" style="width:64px; height:46px; object-fit:cover; border:1px solid #1976d2; border-radius:3px; flex-shrink:0;">
+            <div style="flex:1; min-width:0;">
+              <input type="text" value="${escapeHtml(ph.caption)}" onchange="updatePhotoCaption(${p.id}, ${idx}, this.value)" style="width:100%; max-width:340px; font-weight:bold; color:var(--text-darkblue);" title="คลิกเพื่อแก้ไขคำบรรยายภาพ">
+              <div style="font-size:11.5px; color:#555; margin-top:2px;">ลำดับภาพที่ ${idx + 1} | วันที่: ${escapeHtml(ph.date || p.dateStart)}</div>
             </div>
           </div>
-          <button type="button" class="classic-btn" onclick="removeProjectPhoto(${p.id}, ${idx})">ลบภาพ</button>
+          <button type="button" class="classic-btn" onclick="removeProjectPhoto(${p.id}, ${idx})" style="color:var(--text-red);">ลบภาพ</button>
         </div>
       `).join("");
 
-      openInfoModal("4. อัปโหลดและจัดการรูปภาพกิจกรรมโครงการ", `
+      const collagePreviewSection = p.photos.length > 0 ? `
+        <div style="margin-bottom:10px; background:#f0f8ff; border:1px solid #90caf9; padding:8px; border-radius:4px;">
+          <div style="font-weight:bold; color:var(--text-darkblue); margin-bottom:4px;">
+            ตัวอย่างภาพรวมที่ระบบจัดเรียงต่อกันเป็นภาพเดียวอัตโนมัติ (${p.photos.length} ภาพ) :
+          </div>
+          ${buildReportPhotosGridHtml(p)}
+        </div>
+      ` : "";
+
+      openInfoModal("4. อัปโหลดและจัดการรูปภาพกิจกรรมโครงการ (สูงสุดไม่เกิน 6 ภาพ - จัดรวมเป็นภาพเดียวอัตโนมัติ)", `
         <div style="margin-bottom:8px;">
           <strong>โครงการ :</strong> <span style="color:var(--text-blue);">${escapeHtml(p.name)}</span>
         </div>
         <div style="background:#e3f2fd; border:1px dashed #1976d2; padding:10px; margin-bottom:10px;">
-          <div style="font-weight:bold; margin-bottom:6px;">เพิ่มรูปภาพกิจกรรมใหม่ (สามารถเลือกได้หลายรูปและจะแสดงในหน้ารายงานพิมพ์ทันที) :</div>
-          <div class="form-row" style="margin-bottom:6px;">
-            <label>เลือกไฟล์รูปภาพ :</label>
-            <input type="file" id="newPhotoFileInput" accept="image/*" multiple onchange="onPhotoFileSelected(${p.id})">
-          </div>
-          <div class="form-row" style="margin-bottom:6px;">
-            <label>คำบรรยายภาพ :</label>
-            <input type="text" id="newPhotoCaptionInput" placeholder="ระบุคำบรรยายภาพ (ถ้ามี)..." style="flex:1; min-width:220px;">
-            <button type="button" class="classic-btn" onclick="addProjectPhoto(${p.id})">อัปโหลดเพิ่มรูปภาพ</button>
-          </div>
+          ${isFull ? `
+            <div style="color:var(--text-red); font-weight:bold;">
+              * แนบรูปภาพครบจำนวนสูงสุด ${MAX_PROJECT_PHOTOS} ภาพแล้ว (หากต้องการเปลี่ยนรูปใหม่ กรุณากด "ลบภาพ" ด้านล่างออกก่อน)
+            </div>
+          ` : `
+            <div style="font-weight:bold; margin-bottom:6px; color:var(--text-darkblue);">
+              เพิ่มรูปภาพกิจกรรม (เลือกได้อีก ${MAX_PROJECT_PHOTOS - p.photos.length} ภาพ — ระบบจะนำภาพมาต่อกันเป็นภาพเดียวที่สมดุลให้อัตโนมัติ) :
+            </div>
+            <div class="form-row" style="margin-bottom:6px;">
+              <label>คำบรรยายภาพ :</label>
+              <input type="text" id="newPhotoCaptionInput" placeholder="ระบุคำบรรยายภาพรวม (ถ้ามี)..." style="flex:1; min-width:220px;">
+            </div>
+            <div class="form-row" style="margin-bottom:4px;">
+              <label>เลือกไฟล์รูปภาพ :</label>
+              <input type="file" id="newPhotoFileInput" accept="image/*" multiple onchange="onPhotoFileSelected(${p.id})">
+              <button type="button" class="classic-btn" onclick="addProjectPhoto(${p.id})">อัปโหลดเพิ่มรูปภาพ</button>
+            </div>
+          `}
         </div>
-        <div style="margin-bottom:6px; font-weight:bold;">รูปภาพกิจกรรมที่บันทึกไว้ (${p.photos.length} ภาพ) :</div>
-        <div style="max-height:240px; overflow-y:auto; margin-bottom:10px;">
-          ${photosHtml || `<div style="text-align:center; padding:12px; color:#666;">ยังไม่มีรูปภาพกิจกรรม</div>`}
+        ${collagePreviewSection}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <strong>รายการรูปภาพต้นฉบับ (${p.photos.length} / ${MAX_PROJECT_PHOTOS} ภาพ) :</strong>
+          ${p.photos.length > 0 ? `<button type="button" class="classic-btn" onclick="clearAllProjectPhotos(${p.id})" style="color:var(--text-red);">ลบรูปทั้งหมด</button>` : ""}
+        </div>
+        <div style="max-height:180px; overflow-y:auto; margin-bottom:10px;">
+          ${photosHtml || `<div style="text-align:center; padding:14px; color:#666; background:#fff; border:1px solid #cfe8fc;">ยังไม่มีรูปภาพกิจกรรมที่อัปโหลด (สามารถเลือกรูปภาพจริงจากเครื่องได้สูงสุดไม่เกิน ${MAX_PROJECT_PHOTOS} ภาพ เพื่อจัดรวมเป็นภาพเดียว)</div>`}
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
-          <button type="button" class="classic-btn" onclick="saveAndOpenPrintReport(${p.id})">ดูตัวอย่างเอกสารพิมพ์พร้อมรูปภาพ</button>
+          <button type="button" class="classic-btn" onclick="saveAndOpenPrintReport(${p.id})" style="font-weight:bold; color:#0d47a1;">ดูตัวอย่างรายงาน & ส่งออก PDF</button>
           <button type="button" class="classic-btn" onclick="saveAndClosePhotoModal(${p.id})">บันทึกและปิดหน้าต่าง</button>
         </div>
       `);
+    }
+
+    function updatePhotoCaption(id, photoIdx, newCap) {
+      const p = state.projects.find(item => item.id === id);
+      if (!p || !p.photos || !p.photos[photoIdx]) return;
+      p.photos[photoIdx].caption = (newCap || "").trim() || `ภาพกิจกรรมที่ ${photoIdx + 1}`;
+      persistState();
+    }
+
+    function clearAllProjectPhotos(id) {
+      const p = state.projects.find(item => item.id === id);
+      if (!p) return;
+      p.photos = [];
+      p.collageDataUrl = "";
+      persistState();
+      openPhotoGalleryModal(id);
     }
 
     function onPhotoFileSelected(id) {
@@ -2875,50 +3069,49 @@
       const p = state.projects.find(item => item.id === id);
       if (!p) return;
       ensureProjectExtraData(p);
+      const remainingSlots = MAX_PROJECT_PHOTOS - p.photos.length;
+      if (remainingSlots <= 0) {
+        if (afterCallback) afterCallback();
+        else openPhotoGalleryModal(id);
+        return;
+      }
+
       const fileInput = document.getElementById("newPhotoFileInput");
       const captionInput = document.getElementById("newPhotoCaptionInput");
       const customCaption = (captionInput && captionInput.value.trim()) ? captionInput.value.trim() : "";
-      const files = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
+      const rawFiles = fileInput && fileInput.files ? Array.from(fileInput.files) : [];
+      const files = rawFiles.slice(0, remainingSlots);
 
       if (files.length > 0) {
         let loadedCount = 0;
         files.forEach((file, idx) => {
           const reader = new FileReader();
           reader.onload = function(evt) {
-            const num = p.photos.length + 1;
-            const cap = customCaption
-              ? (files.length > 1 ? `${customCaption} (${idx + 1})` : customCaption)
-              : `ภาพที่ ${num}: ${file.name.replace(/\.[^.]+$/, "")}`;
-            p.photos.push({
-              caption: cap,
-              date: p.dateStart,
-              dataUrl: evt.target.result
-            });
+            if (p.photos.length < MAX_PROJECT_PHOTOS) {
+              const num = p.photos.length + 1;
+              const cap = customCaption
+                ? (files.length > 1 ? `${customCaption} (${idx + 1})` : customCaption)
+              : `ภาพกิจกรรมที่ ${num}`;
+              p.photos.push({
+                caption: cap,
+                date: p.dateStart,
+                dataUrl: evt.target.result
+              });
+            }
             loadedCount++;
             if (loadedCount === files.length) {
-              persistState();
-              if (afterCallback) {
-                afterCallback();
-              } else {
-                openPhotoGalleryModal(id);
-              }
+              rebuildProjectCollageImage(p, function() {
+                persistState();
+                if (afterCallback) {
+                  afterCallback();
+                } else {
+                  openPhotoGalleryModal(id);
+                }
+              });
             }
           };
           reader.readAsDataURL(file);
         });
-      } else if (customCaption) {
-        const num = p.photos.length + 1;
-        p.photos.push({
-          caption: customCaption,
-          date: p.dateStart,
-          dataUrl: createDefaultPhotoDataUrl(num, customCaption, p.dateStart)
-        });
-        persistState();
-        if (afterCallback) {
-          afterCallback();
-        } else {
-          openPhotoGalleryModal(id);
-        }
       } else if (afterCallback) {
         afterCallback();
       }
@@ -2926,35 +3119,45 @@
 
     function saveAndClosePhotoModal(id) {
       const fileInput = document.getElementById("newPhotoFileInput");
-      const captionInput = document.getElementById("newPhotoCaptionInput");
-      const hasPending = (fileInput && fileInput.files && fileInput.files.length > 0) ||
-                         (captionInput && captionInput.value.trim() !== "");
+      const hasPending = fileInput && fileInput.files && fileInput.files.length > 0;
       if (hasPending) {
         addProjectPhoto(id, function() {
           persistState();
           closeInfoModal();
-          showFeedback("บันทึกรูปภาพกิจกรรมโครงการเรียบร้อยแล้ว (สามารถกดปุ่มเครื่องพิมพ์เพื่อดูรูปในเอกสารได้ทันที)");
+          showFeedback("บันทึกรูปภาพและจัดเรียงเป็นภาพเดียวที่สมดุลเรียบร้อยแล้ว");
         });
       } else {
-        persistState();
-        closeInfoModal();
-        showFeedback("บันทึกข้อมูลรูปภาพกิจกรรมโครงการเรียบร้อยแล้ว");
+        const p = state.projects.find(item => item.id === id);
+        if (p) {
+          rebuildProjectCollageImage(p, function() {
+            persistState();
+            closeInfoModal();
+            showFeedback("บันทึกข้อมูลรูปภาพกิจกรรมโครงการเรียบร้อยแล้ว");
+          });
+        } else {
+          closeInfoModal();
+        }
       }
     }
 
     function saveAndOpenPrintReport(id) {
       const fileInput = document.getElementById("newPhotoFileInput");
-      const captionInput = document.getElementById("newPhotoCaptionInput");
-      const hasPending = (fileInput && fileInput.files && fileInput.files.length > 0) ||
-                         (captionInput && captionInput.value.trim() !== "");
+      const hasPending = fileInput && fileInput.files && fileInput.files.length > 0;
       if (hasPending) {
         addProjectPhoto(id, function() {
           persistState();
           openPrintReportModal(id);
         });
       } else {
-        persistState();
-        openPrintReportModal(id);
+        const p = state.projects.find(item => item.id === id);
+        if (p) {
+          rebuildProjectCollageImage(p, function() {
+            persistState();
+            openPrintReportModal(id);
+          });
+        } else {
+          openPrintReportModal(id);
+        }
       }
     }
 
@@ -2962,8 +3165,16 @@
       const p = state.projects.find(item => item.id === id);
       if (!p || !p.photos) return;
       p.photos.splice(photoIdx, 1);
-      persistState();
-      openPhotoGalleryModal(id);
+      // Re-number default captions cleanly
+      p.photos.forEach((ph, idx) => {
+        if (/^ภาพ(กิจกรรม)?ที่\s*\d+$/i.test(ph.caption || "")) {
+          ph.caption = `ภาพกิจกรรมที่ ${idx + 1}`;
+        }
+      });
+      rebuildProjectCollageImage(p, function() {
+        persistState();
+        openPhotoGalleryModal(id);
+      });
     }
 
     // ฟังก์ชันปุ่มที่ 5: แนบไฟล์เอกสารโครงการ (Word / PDF)
@@ -3630,7 +3841,12 @@
           </div>
           <div class="form-row">
             <label style="width:130px;">ตำแหน่ง / ตำบล :</label>
-            <input type="text" id="admNewPos" value="ครู กศน.ตำบล" style="width:140px;">
+            <select id="admNewPos" style="width:140px;">
+              <option value="ครู" selected>ครู</option>
+              <option value="ครู ศกร.">ครู ศกร.</option>
+              <option value="บรรณารักษ์">บรรณารักษ์</option>
+              <option value="ผู้บริหารสถานศึกษา">ผู้บริหารสถานศึกษา</option>
+            </select>
             <input type="text" id="admNewSub" value="ท่ากระดาน" style="width:120px;">
           </div>
           <div class="form-row">
@@ -3699,7 +3915,12 @@
           </div>
           <div class="form-row">
             <label style="width:130px;">ตำแหน่ง / ตำบล :</label>
-            <input type="text" id="admEditPos" value="${escapeHtml(up.position || '')}" style="width:135px;">
+            <select id="admEditPos" style="width:135px;">
+              <option value="ครู" ${up.position === "ครู" ? "selected" : ""}>ครู</option>
+              <option value="ครู ศกร." ${up.position === "ครู ศกร." ? "selected" : ""}>ครู ศกร.</option>
+              <option value="บรรณารักษ์" ${up.position === "บรรณารักษ์" ? "selected" : ""}>บรรณารักษ์</option>
+              <option value="ผู้บริหารสถานศึกษา" ${up.position === "ผู้บริหารสถานศึกษา" ? "selected" : ""}>ผู้บริหารสถานศึกษา</option>
+            </select>
             <input type="text" id="admEditSub" value="${escapeHtml(up.subdistrict || '')}" style="width:135px;">
           </div>
           <div class="form-row">
