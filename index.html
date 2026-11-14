@@ -1926,6 +1926,18 @@
       return profile.position || "ครู";
     }
 
+    function getReporterOrgRightDisplay(up) {
+      const profile = up || state.userProfile || {};
+      if (profile.position === "ครู ศกร." && profile.posSubdistrict) {
+        return `ศกร.ระดับ${profile.posSubdistrict}`;
+      }
+      if (profile.subdistrict) {
+        const sub = String(profile.subdistrict).replace(/^ตำบล/, "");
+        return `ศกร.ระดับตำบล${sub}`;
+      }
+      return "";
+    }
+
     function populateProfileFormFromState() {
       const up = state.userProfile;
       document.getElementById("profUserId").value = state.userId || "";
@@ -3092,7 +3104,7 @@
           ${buildReportPhotosGridHtml(p)}
           <div style="margin-top:12px; border-top:1px dashed #999; padding-top:8px; display:flex; justify-content:space-between; flex-wrap:wrap;">
             <span>ผู้รายงานข้อมูล : <strong style="color:var(--text-blue);">${escapeHtml(getFullName())}</strong> (${escapeHtml(getPositionDisplay(state.userProfile))})</span>
-            <span>ศกร.ระดับตำบล${escapeHtml(state.userProfile.subdistrict)}</span>
+            <span id="reportRightSubdistrictText">${escapeHtml(getReporterOrgRightDisplay(state.userProfile))}</span>
           </div>
         </div>
         <div class="no-print" style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-top:10px; flex-wrap:wrap;">
