@@ -705,7 +705,7 @@
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-</head>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
 <body>
 
   <!-- Hidden file input for Backup JSON Restore -->
@@ -1543,7 +1543,7 @@
             <!-- Admin Tab 1: System Settings, Announcement, Footer, Admin Password & IndexedDB Backup/Restore -->
             <div id="admin-tab-settings" class="admin-tab-pane yellow-frame" style="border: 1px solid #90caf9; margin-bottom: 0;">
               <!-- IndexedDB & Backup/Restore Box -->
-              <div style="background: #e3f2fd; border: 1px solid #1976d2; border-radius: 4px; padding: 10px 12px; margin-bottom: 14px;">
+              <div style="background: #e3f2fd; border: 1px solid #1976d2; border-radius: 4px; padding: 10px 12px; margin-bottom: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
                   <strong style="color: #0d47a1;">สถานะระบบจัดเก็บข้อมูลความจุสูง (IndexedDB Storage & Backup / Restore)</strong>
                   <span id="idbStatusBadge" style="background: #1b5e20; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11.5px;">IndexedDB: พร้อมใช้งาน (ความจุระดับ GB + บีบอัดภาพอัตโนมัติ)</span>
@@ -1554,6 +1554,58 @@
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                   <button type="button" class="classic-btn" onclick="exportBackupJsonFile()" style="font-weight: bold; color: #1b5e20;">ดาวน์โหลดไฟล์สำรองข้อมูลทั้งหมด (Export Backup .json)</button>
                   <button type="button" class="classic-btn" onclick="triggerRestoreBackupFile()" style="font-weight: bold; color: #0d47a1;">นำเข้า/กู้คืนไฟล์สำรองข้อมูล (Import Restore .json)</button>
+                </div>
+              </div>
+
+              <!-- Cloud Database Connection Box (Firebase / Supabase) -->
+              <div style="background: #f3e5f5; border: 1px solid #7b1fa2; border-radius: 4px; padding: 10px 12px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                  <strong style="color: #4a148c;">เชื่อมต่อฐานข้อมูลคลาวด์ออนไลน์ (Firebase / Supabase Cloud Sync)</strong>
+                  <span id="cloudSyncStatusBadge" style="background: #616161; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11.5px;">Cloud Sync: ยังไม่ได้เปิดใช้งาน (โหมดออฟไลน์ IndexedDB)</span>
+                </div>
+                <div class="form-row" style="margin-bottom: 8px;">
+                  <label style="width: 155px; font-weight: bold;">เลือกผู้ให้บริการ Cloud :</label>
+                  <select id="admCloudProvider" onchange="toggleCloudProviderFields()" style="width: 260px;">
+                    <option value="none">-- ปิดใช้งาน (เก็บเฉพาะ IndexedDB ในเครื่อง) --</option>
+                    <option value="supabase">Supabase (PostgreSQL Cloud Database)</option>
+                    <option value="firebase">Firebase (Realtime Database / Firestore)</option>
+                  </select>
+                  <button type="button" class="classic-btn" onclick="openCloudSetupGuideModal()" style="color: #4a148c; font-weight: bold;">ดูวิธีนำค่า URL / Key มาใส่</button>
+                </div>
+
+                <!-- Supabase Config Fields -->
+                <div id="cloudSupabaseFields" style="display: none; background: #ffffff; border: 1px dashed #9c27b0; padding: 8px 10px; margin-bottom: 8px; border-radius: 4px;">
+                  <div class="form-row" style="margin-bottom: 6px;">
+                    <label style="width: 150px;">Supabase Project URL :</label>
+                    <input type="text" id="admSupabaseUrl" placeholder="เช่น about:invalid#zPythonSafez" style="flex: 1; min-width: 240px;">
+                  </div>
+                  <div class="form-row" style="margin-bottom: 6px;">
+                    <label style="width: 150px;">Supabase Anon Key :</label>
+                    <input type="password" id="admSupabaseKey" placeholder="วางค่า anon public key จากหน้า Project Settings > API" style="flex: 1; min-width: 240px;">
+                  </div>
+                  <div class="form-row" style="margin-bottom: 2px;">
+                    <label style="width: 150px;">ชื่อตาราง (Table Name) :</label>
+                    <input type="text" id="admSupabaseTable" value="pls_app_data" style="width: 160px;">
+                    <span style="font-size: 11.5px; color: #555;">(คอลัมน์: <code>id text primary key, payload jsonb, updated_at timestamptz</code>)</span>
+                  </div>
+                </div>
+
+                <!-- Firebase Config Fields -->
+                <div id="cloudFirebaseFields" style="display: none; background: #ffffff; border: 1px dashed #e65100; padding: 8px 10px; margin-bottom: 8px; border-radius: 4px;">
+                  <div class="form-row" style="margin-bottom: 6px;">
+                    <label style="width: 165px;">Firebase Database URL :</label>
+                    <input type="text" id="admFirebaseDbUrl" placeholder="เช่น about:invalid#zPythonSafez" style="flex: 1; min-width: 240px;">
+                  </div>
+                  <div class="form-row" style="margin-bottom: 2px;">
+                    <label style="width: 165px;">Firebase API Key / Secret :</label>
+                    <input type="password" id="admFirebaseApiKey" placeholder="(ถ้ามี) Web API Key หรือ Database Secret" style="flex: 1; min-width: 240px;">
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" class="classic-btn" onclick="saveAndTestCloudConfig()" style="font-weight: bold; color: #4a148c;">บันทึกค่า Cloud & ทดสอบเชื่อมต่อ</button>
+                  <button type="button" class="classic-btn" onclick="manualPushToCloud()" style="color: #1b5e20;">ส่งข้อมูลขึ้น Cloud ทันที (Push)</button>
+                  <button type="button" class="classic-btn" onclick="manualPullFromCloud()" style="color: #0d47a1;">ดึงข้อมูลจาก Cloud ล่าสุด (Pull)</button>
                 </div>
               </div>
 
@@ -1765,16 +1817,30 @@
   </div>
 
   <script>
-    // ==================== HIGH-CAPACITY INDEXEDDB STORAGE + LOCALSTORAGE FALLBACK ====================
+    // ==================== HIGH-CAPACITY INDEXEDDB + FIREBASE/SUPABASE CLOUD SYNC ====================
     const STORAGE_KEY = "pls_kirirat_clean_v2";
+    const CLOUD_CFG_KEY = "pls_kirirat_cloud_cfg_v1";
     const IDB_NAME = "pls_kirirat_indexeddb_v1";
     const IDB_STORE = "app_state";
     const INITIAL_PROJECTS = [];
+
+    // หากต้องการฝังค่าเชื่อมต่อ Cloud ลงในไฟล์ index.html ถาวรสำหรับทุกเครื่องที่เปิดผ่าน Netlify
+    // สามารถนำค่า URL และ Key มาวางใน DEFAULT_CLOUD_CONFIG ด้านล่างนี้ หรือตั้งค่าผ่านหน้า "ระบบหลังบ้าน (Admin)" ได้เลย
+    const DEFAULT_CLOUD_CONFIG = {
+      provider: "none", // ตั้งเป็น "supabase" หรือ "firebase" หรือ "none"
+      supabaseUrl: "",
+      supabaseKey: "",
+      supabaseTable: "pls_app_data",
+      firebaseDbUrl: "",
+      firebaseApiKey: ""
+    };
 
     let state = {
       isLoggedIn: false,
       isAdmin: false,
       idbActive: false,
+      cloudConfig: { ...DEFAULT_CLOUD_CONFIG },
+      lastCloudSyncTime: "-",
       currentAdminTab: "settings",
       currentView: "home",
       budgetYear: "2568- 2569",
@@ -1905,7 +1971,295 @@
       }
     }
 
-    function persistState() {
+    function loadCloudConfigFromStorage() {
+      try {
+        const raw = localStorage.getItem(CLOUD_CFG_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") {
+            state.cloudConfig = { ...DEFAULT_CLOUD_CONFIG, ...parsed };
+          }
+        }
+      } catch (err) {}
+    }
+
+    function saveCloudConfigToStorage() {
+      try {
+        localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(state.cloudConfig));
+      } catch (err) {}
+    }
+
+    function isCloudConfigured() {
+      const cfg = state.cloudConfig || {};
+      if (cfg.provider === "supabase") {
+        return Boolean(cfg.supabaseUrl && cfg.supabaseUrl.trim() && cfg.supabaseKey && cfg.supabaseKey.trim());
+      }
+      if (cfg.provider === "firebase") {
+        return Boolean(cfg.firebaseDbUrl && cfg.firebaseDbUrl.trim());
+      }
+      return false;
+    }
+
+    function updateCloudStatusBadge(customMsg, bgColor) {
+      const badge = document.getElementById("cloudSyncStatusBadge");
+      if (!badge) return;
+      if (customMsg) {
+        badge.textContent = customMsg;
+        badge.style.background = bgColor || "#4a148c";
+        return;
+      }
+      if (!isCloudConfigured()) {
+        badge.textContent = "Cloud Sync: ยังไม่ได้เปิดใช้งาน (โหมดออฟไลน์ IndexedDB)";
+        badge.style.background = "#616161";
+      } else {
+        const provLabel = state.cloudConfig.provider === "supabase" ? "Supabase" : "Firebase";
+        badge.textContent = `Cloud Sync (${provLabel}): เชื่อมต่อแล้ว | ซิงค์ล่าสุด: ${state.lastCloudSyncTime}`;
+        badge.style.background = "#4a148c";
+      }
+    }
+
+    function toggleCloudProviderFields() {
+      const sel = document.getElementById("admCloudProvider");
+      const supBox = document.getElementById("cloudSupabaseFields");
+      const fbBox = document.getElementById("cloudFirebaseFields");
+      if (!sel || !supBox || !fbBox) return;
+      supBox.style.display = sel.value === "supabase" ? "block" : "none";
+      fbBox.style.display = sel.value === "firebase" ? "block" : "none";
+    }
+
+    function populateCloudConfigForm() {
+      const cfg = state.cloudConfig || DEFAULT_CLOUD_CONFIG;
+      const sel = document.getElementById("admCloudProvider");
+      if (!sel) return;
+      sel.value = cfg.provider || "none";
+      document.getElementById("admSupabaseUrl").value = cfg.supabaseUrl || "";
+      document.getElementById("admSupabaseKey").value = cfg.supabaseKey || "";
+      document.getElementById("admSupabaseTable").value = cfg.supabaseTable || "pls_app_data";
+      document.getElementById("admFirebaseDbUrl").value = cfg.firebaseDbUrl || "";
+      document.getElementById("admFirebaseApiKey").value = cfg.firebaseApiKey || "";
+      toggleCloudProviderFields();
+      updateCloudStatusBadge();
+    }
+
+    function pushPayloadToCloud(payload, callback) {
+      if (!isCloudConfigured()) {
+        if (callback) callback(false, "ยังไม่ได้ตั้งค่า URL / Key ของ Cloud");
+        return;
+      }
+      const cfg = state.cloudConfig;
+      if (cfg.provider === "supabase") {
+        const baseUrl = cfg.supabaseUrl.trim().replace(/\/+$/, "");
+        const key = cfg.supabaseKey.trim();
+        const table = (cfg.supabaseTable || "pls_app_data").trim();
+        fetch(`${baseUrl}/rest/v1/${encodeURIComponent(table)}`, {
+          method: "POST",
+          headers: {
+            "apikey": key,
+            "Authorization": `Bearer ${key}`,
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates,return=minimal"
+          },
+          body: JSON.stringify({
+            id: "main",
+            payload: payload,
+            updated_at: new Date().toISOString()
+          })
+        }).then(res => {
+          if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+          state.lastCloudSyncTime = getNowTimestampStr();
+          updateCloudStatusBadge();
+          if (callback) callback(true);
+        }).catch(err => {
+          updateCloudStatusBadge(`Cloud Sync ผิดพลาด (${err.message})`, "#c62828");
+          if (callback) callback(false, err.message);
+        });
+      } else if (cfg.provider === "firebase") {
+        const baseUrl = cfg.firebaseDbUrl.trim().replace(/\/+$/, "");
+        const secret = (cfg.firebaseApiKey || "").trim();
+        const authParam = secret ? `?auth=${encodeURIComponent(secret)}` : "";
+        fetch(`${baseUrl}/pls_app_data/main.json${authParam}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(res => {
+          if (!res.ok) throw new Error(`Firebase HTTP ${res.status}`);
+          state.lastCloudSyncTime = getNowTimestampStr();
+          updateCloudStatusBadge();
+          if (callback) callback(true);
+        }).catch(err => {
+          updateCloudStatusBadge(`Cloud Sync ผิดพลาด (${err.message})`, "#c62828");
+          if (callback) callback(false, err.message);
+        });
+      }
+    }
+
+    function pullPayloadFromCloud(callback) {
+      if (!isCloudConfigured()) {
+        if (callback) callback(false, "ยังไม่ได้ตั้งค่า URL / Key ของ Cloud");
+        return;
+      }
+      const cfg = state.cloudConfig;
+      if (cfg.provider === "supabase") {
+        const baseUrl = cfg.supabaseUrl.trim().replace(/\/+$/, "");
+        const key = cfg.supabaseKey.trim();
+        const table = (cfg.supabaseTable || "pls_app_data").trim();
+        fetch(`${baseUrl}/rest/v1/${encodeURIComponent(table)}?id=eq.main&select=payload,updated_at`, {
+          method: "GET",
+          headers: {
+            "apikey": key,
+            "Authorization": `Bearer ${key}`,
+            "Accept": "application/json"
+          }
+        }).then(res => {
+          if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+          return res.json();
+        }).then(rows => {
+          if (Array.isArray(rows) && rows.length > 0 && rows[0].payload) {
+            applyLoadedPayload(rows[0].payload);
+            state.lastCloudSyncTime = getNowTimestampStr();
+            updateCloudStatusBadge();
+            if (callback) callback(true, rows[0].payload);
+          } else {
+            if (callback) callback(true, null);
+          }
+        }).catch(err => {
+          updateCloudStatusBadge(`ดึงข้อมูล Cloud ไม่สำเร็จ (${err.message})`, "#c62828");
+          if (callback) callback(false, err.message);
+        });
+      } else if (cfg.provider === "firebase") {
+        const baseUrl = cfg.firebaseDbUrl.trim().replace(/\/+$/, "");
+        const secret = (cfg.firebaseApiKey || "").trim();
+        const authParam = secret ? `?auth=${encodeURIComponent(secret)}` : "";
+        fetch(`${baseUrl}/pls_app_data/main.json${authParam}`, {
+          method: "GET",
+          headers: { "Accept": "application/json" }
+        }).then(res => {
+          if (!res.ok) throw new Error(`Firebase HTTP ${res.status}`);
+          return res.json();
+        }).then(data => {
+          if (data && typeof data === "object") {
+            applyLoadedPayload(data);
+            state.lastCloudSyncTime = getNowTimestampStr();
+            updateCloudStatusBadge();
+            if (callback) callback(true, data);
+          } else {
+            if (callback) callback(true, null);
+          }
+        }).catch(err => {
+          updateCloudStatusBadge(`ดึงข้อมูล Cloud ไม่สำเร็จ (${err.message})`, "#c62828");
+          if (callback) callback(false, err.message);
+        });
+      }
+    }
+
+    function saveAndTestCloudConfig() {
+      const sel = document.getElementById("admCloudProvider");
+      state.cloudConfig.provider = sel ? sel.value : "none";
+      state.cloudConfig.supabaseUrl = (document.getElementById("admSupabaseUrl").value || "").trim();
+      state.cloudConfig.supabaseKey = (document.getElementById("admSupabaseKey").value || "").trim();
+      state.cloudConfig.supabaseTable = (document.getElementById("admSupabaseTable").value || "pls_app_data").trim();
+      state.cloudConfig.firebaseDbUrl = (document.getElementById("admFirebaseDbUrl").value || "").trim();
+      state.cloudConfig.firebaseApiKey = (document.getElementById("admFirebaseApiKey").value || "").trim();
+
+      saveCloudConfigToStorage();
+      updateCloudStatusBadge();
+
+      if (state.cloudConfig.provider === "none") {
+        showFeedback("ปิดการใช้งาน Cloud Sync แล้ว (ระบบจะบันทึกในฐานข้อมูล IndexedDB ในเครื่อง)");
+        return;
+      }
+      if (!isCloudConfigured()) {
+        openInfoModal("ข้อมูลการตั้งค่า Cloud ไม่ครบถ้วน", `<p style="color:var(--text-red);">กรุณากรอก URL และ Key ของผู้ให้บริการ Cloud ที่เลือกให้ครบถ้วนก่อนกดทดสอบเชื่อมต่อ</p>`);
+        return;
+      }
+
+      updateCloudStatusBadge("กำลังทดสอบเชื่อมต่อ Cloud...", "#1565c0");
+      const payload = buildSerializablePayload();
+      pushPayloadToCloud(payload, function(ok, errMsg) {
+        if (ok) {
+          showFeedback(`เชื่อมต่อและซิงค์ข้อมูลขึ้น ${state.cloudConfig.provider.toUpperCase()} สำเร็จเรียบร้อยแล้ว!`);
+        } else {
+          openInfoModal("ไม่สามารถเชื่อมต่อ Cloud ได้", `
+            <p style="color:var(--text-red); font-weight:bold;">เกิดข้อผิดพลาดในการเชื่อมต่อ: ${escapeHtml(errMsg || "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้")}</p>
+            <p>กรุณาตรวจสอบว่า URL และ Key ถูกต้อง และได้สร้างตาราง <code>pls_app_data</code> (สำหรับ Supabase) หรือเปิดสิทธิ์ Read/Write (สำหรับ Firebase) เรียบร้อยแล้ว</p>
+            <div style="text-align:right; margin-top:10px;">
+              <button type="button" class="classic-btn" onclick="openCloudSetupGuideModal()">ดูวิธีตั้งค่าตาราง</button>
+              <button type="button" class="classic-btn" onclick="closeInfoModal()">ปิด</button>
+            </div>
+          `);
+        }
+      });
+    }
+
+    function manualPushToCloud() {
+      if (!isCloudConfigured()) {
+        openInfoModal("ยังไม่ได้ตั้งค่า Cloud", `<p style="color:var(--text-red);">กรุณาเลือกผู้ให้บริการ Cloud (Supabase หรือ Firebase) และกรอก URL / Key ก่อนกดส่งข้อมูลขึ้น Cloud</p>`);
+        return;
+      }
+      const payload = buildSerializablePayload();
+      pushPayloadToCloud(payload, function(ok, errMsg) {
+        if (ok) {
+          showFeedback("ส่งข้อมูลทั้งหมดขึ้นฐานข้อมูล Cloud เรียบร้อยแล้ว");
+        } else {
+          openInfoModal("ส่งข้อมูลขึ้น Cloud ไม่สำเร็จ", `<p style="color:var(--text-red);">รายละเอียด: ${escapeHtml(errMsg || "")}</p>`);
+        }
+      });
+    }
+
+    function manualPullFromCloud() {
+      if (!isCloudConfigured()) {
+        openInfoModal("ยังไม่ได้ตั้งค่า Cloud", `<p style="color:var(--text-red);">กรุณาเลือกผู้ให้บริการ Cloud (Supabase หรือ Firebase) และกรอก URL / Key ก่อนกดดึงข้อมูล</p>`);
+        return;
+      }
+      pullPayloadFromCloud(function(ok, result) {
+        if (ok && result) {
+          applySiteSettingsToDOM();
+          persistState(true);
+          updateHeaderUserText();
+          renderManageProjects();
+          renderReportProjects();
+          renderPreviewProjects();
+          renderAdminConsole();
+          showFeedback("ดึงข้อมูลล่าสุดจากฐานข้อมูล Cloud มาอัปเดตลงในระบบเรียบร้อยแล้ว");
+        } else if (ok && !result) {
+          showFeedback("เชื่อมต่อสำเร็จ แต่ยังไม่มีข้อมูลที่บันทึกไว้บน Cloud");
+        } else {
+          openInfoModal("ดึงข้อมูลจาก Cloud ไม่สำเร็จ", `<p style="color:var(--text-red);">รายละเอียด: ${escapeHtml(result || "")}</p>`);
+        }
+      });
+    }
+
+    function openCloudSetupGuideModal() {
+      openInfoModal("คู่มือการนำค่า URL / Key ของ Supabase หรือ Firebase มาเชื่อมต่อ", `
+        <div style="background:#ffffff; border:1px solid #90caf9; padding:12px; font-size:12.5px; line-height:1.55;">
+          <div style="font-weight:bold; color:#4a148c; font-size:13.5px; margin-bottom:6px;">ทางเลือกที่ 1: เชื่อมต่อกับ Supabase (แนะนำ — ฟรี 500 MB)</div>
+          <ol style="margin:0 0 10px; padding-left:20px;">
+            <li>สมัครและสร้างโปรเจกต์ฟรีที่ <strong>supabase.com</strong> (เลือก Region: <code>Southeast Asia (Singapore)</code>)</li>
+            <li>ไปที่เมนู <strong>SQL Editor</strong> ด้านซ้าย แล้ววางคำสั่ง SQL นี้เพื่อสร้างตารางเก็บข้อมูลระบบ แล้วกด <strong>Run</strong>:
+              <pre style="background:#f5f5f5; border:1px solid #ccc; padding:6px; margin:4px 0; font-size:11.5px; overflow-x:auto;">create table if not exists pls_app_data (
+  id text primary key,
+  payload jsonb,
+  updated_at timestamptz default now()
+);
+alter table pls_app_data disable row level security;</pre>
+            </li>
+            <li>ไปที่เมนู <strong>Project Settings (รูปฟันเฟือง) &gt; API</strong> คัดลอก <strong>Project URL</strong> และ <strong>anon public key</strong> มาวางในช่องตั้งค่าแล้วกด <strong>บันทึกค่า Cloud & ทดสอบเชื่อมต่อ</strong></li>
+          </ol>
+          <hr class="thin-grey-hr">
+          <div style="font-weight:bold; color:#e65100; font-size:13.5px; margin-bottom:6px;">ทางเลือกที่ 2: เชื่อมต่อกับ Firebase Realtime Database (ฟรี 1 GB)</div>
+          <ol style="margin:0; padding-left:20px;">
+            <li>สร้างโปรเจกต์ที่ <strong>console.firebase.google.com</strong> แล้วไปที่เมนู <strong>Build &gt; Realtime Database &gt; Create Database</strong></li>
+            <li>เลือก <strong>Start in test mode</strong> (หรือตั้งค่า Rules ให้ <code>".read": true, ".write": true</code>)</li>
+            <li>คัดลอกลิงก์ <strong>Database URL</strong> (เช่น <code>about:invalid#zPythonSafez</code>) มาวางในช่อง <strong>Firebase Database URL</strong> แล้วกด <strong>บันทึกค่า Cloud & ทดสอบเชื่อมต่อ</strong> ได้ทันที</li>
+          </ol>
+        </div>
+        <div style="text-align:right; margin-top:10px;">
+          <button type="button" class="classic-btn" onclick="closeInfoModal()">รับทราบ</button>
+        </div>
+      `);
+    }
+
+    function persistState(skipCloudPush) {
       const toSave = buildSerializablePayload();
       // 1. Primary high-capacity storage: IndexedDB (hundreds of MBs to GBs)
       openAppIndexedDB().then(db => {
@@ -1924,10 +2278,17 @@
       } catch (err) {
         // Ignore quota exceeded on localStorage since IndexedDB holds the full dataset
       }
+
+      // 3. Auto-sync to Firebase / Supabase Cloud if configured
+      if (!skipCloudPush && isCloudConfigured()) {
+        pushPayloadToCloud(toSave);
+      }
+
       updateStorageStatusUI();
     }
 
     function loadSavedState(onComplete) {
+      loadCloudConfigFromStorage();
       // First load synchronous fallback from localStorage if present
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -1947,15 +2308,27 @@
             applyLoadedPayload(getReq.result);
           } else if (state.registeredUsers.length > 0) {
             // Migrate existing localStorage data into IndexedDB automatically
-            persistState();
+            persistState(true);
           }
-          if (onComplete) onComplete();
+          if (isCloudConfigured()) {
+            pullPayloadFromCloud(function() {
+              if (onComplete) onComplete();
+            });
+          } else if (onComplete) {
+            onComplete();
+          }
         };
         getReq.onerror = function() {
           if (onComplete) onComplete();
         };
       }).catch(() => {
-        if (onComplete) onComplete();
+        if (isCloudConfigured()) {
+          pullPayloadFromCloud(function() {
+            if (onComplete) onComplete();
+          });
+        } else if (onComplete) {
+          onComplete();
+        }
       });
     }
 
@@ -4044,6 +4417,7 @@
       }
 
       updateStorageStatusUI();
+      populateCloudConfigForm();
 
       const uBadge = document.getElementById("adminUserCountBadge");
       if (uBadge) uBadge.textContent = state.registeredUsers.length;
